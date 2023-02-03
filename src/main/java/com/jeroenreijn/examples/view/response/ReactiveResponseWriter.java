@@ -7,4 +7,5 @@ import reactor.core.publisher.Mono;
 public interface ReactiveResponseWriter<T> {
     
     <F extends Flux<T>> Mono<Void> write(ServerWebExchange exchange, F model, TemplateResolver<F> renderFunction);
+    <F extends Flux<T>> Mono<Void> writeAsync(ServerWebExchange exchange, F model, TemplateResolverAsync<F> renderFunction);
 }
