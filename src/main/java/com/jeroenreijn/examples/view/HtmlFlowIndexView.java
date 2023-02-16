@@ -6,7 +6,6 @@ import java.util.concurrent.CompletableFuture;
 
 import htmlflow.HtmlFlow;
 import htmlflow.HtmlPage;
-import htmlflow.HtmlViewAsync;
 import org.xmlet.htmlapifaster.Body;
 import org.xmlet.htmlapifaster.Div;
 import org.xmlet.htmlapifaster.EnumMediaType;
@@ -19,14 +18,14 @@ import reactor.core.publisher.Flux;
 
 public class HtmlFlowIndexView {
 
-	public CompletableFuture<String> templatePresentations(OutputStreamWriter writer, Flux<Presentation> presentations) {
+	public CompletableFuture<Void> templatePresentations(OutputStreamWriter writer, Flux<Presentation> presentations) {
 		return HtmlFlow
-				.viewAsync(template -> renderTemplate(template, writer))
+				.viewAsync(this::renderTemplate)
 				.threadSafe()
-				.renderAsync(presentations);
+				.writeAsync(writer, presentations);
 	}
 
-	private void renderTemplate(HtmlPage view, OutputStreamWriter writer) {
+	private void renderTemplate(HtmlPage view) {
 		view
 				.html()
 				.head()
@@ -50,21 +49,7 @@ public class HtmlFlowIndexView {
 				.__() // div
 				.<Flux<Presentation>>await((div,model,onCompletion) -> model
 						.doOnNext(presentation -> template(div, presentation))
-						.doOnNext(pres -> {
-							try {
-								writer.append(pres.toString());
-							} catch (IOException e) {
-								throw new RuntimeException(e);
-							}
-						})
-						.doOnComplete(() -> {
-							onCompletion.finish();
-							try {
-								writer.flush();
-							} catch (IOException e) {
-								throw new RuntimeException(e);
-							}
-						})
+						.doOnComplete(onCompletion::finish)
 						.subscribe() // foreach
 				)
 				.__() // container

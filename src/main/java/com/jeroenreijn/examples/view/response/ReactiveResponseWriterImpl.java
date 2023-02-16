@@ -6,10 +6,17 @@ import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.MonoSink;
+import reactor.core.publisher.SignalType;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
+
+import static java.util.Objects.requireNonNull;
 
 public class ReactiveResponseWriterImpl<T> implements ReactiveResponseWriter<T>{
     
@@ -36,24 +43,46 @@ public class ReactiveResponseWriterImpl<T> implements ReactiveResponseWriter<T>{
         final DataBuffer dataBuffer = response.bufferFactory().allocateBuffer();
         final OutputStreamWriter writer = new OutputStreamWriter(dataBuffer.asOutputStream());
 
-        //TODO review this
-        return response.writeWith(Mono.create(sub -> renderFunction.resolveAsync(sub, model, writer, dataBuffer)
-                    .flatMap(html -> tryAppendToWriter(writer, html))
-                    .doOnTerminate(() -> tryFlushWriter(writer))));
-    }
-
-    private void tryFlushWriter(OutputStreamWriter writer) {
-        try {
-            writer.flush();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return response.writeWith(createMonoWriter(model, renderFunction, dataBuffer, writer));
     }
 
     @NotNull
-    private Mono<Writer> tryAppendToWriter(OutputStreamWriter writer, String html) {
+    private <F extends Flux<T>> Mono<DataBuffer> createMonoWriter(F model, TemplateResolverAsync<F> renderFunction,
+                                                                  DataBuffer dataBuffer, OutputStreamWriter writer) {
+
+        return Mono.create(sink -> renderModelAsync(model, renderFunction, writer)
+                .whenComplete((html, th) -> writeToOutput(sink, writer, dataBuffer, th)));
+    }
+
+    private <F extends Flux<T>> CompletableFuture<Void> renderModelAsync(F model, TemplateResolverAsync<F> renderFunction,
+                                                                         OutputStreamWriter writer) {
+        return renderFunction.resolveAsync(model, writer);
+    }
+
+    private void writeToOutput(MonoSink<DataBuffer> sub, OutputStreamWriter writer, DataBuffer buffer, Throwable th) {
         try {
-            return Mono.just(writer.append(html));
+            tryFinaliseOutput(sub, writer, buffer, th);
+        } finally {
+            try {
+                writer.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private void tryFinaliseOutput(MonoSink<DataBuffer> sub, OutputStreamWriter writer, DataBuffer buffer, Throwable th) {
+        if (th == null) {
+            sendSignal(sub, writer, sink -> sink.success(buffer));
+        } else {
+            sendSignal(sub, writer, sink -> sink.error(th));
+        }
+    }
+
+    private void sendSignal(MonoSink<DataBuffer> sub, OutputStreamWriter writer, Consumer<MonoSink<DataBuffer>> signal) {
+        try {
+            writer.flush();
+            signal.accept(sub);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
