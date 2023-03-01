@@ -11,11 +11,6 @@ import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
-import org.openjdk.jmh.infra.Blackhole;
-import org.openjdk.jmh.runner.Runner;
-import org.openjdk.jmh.runner.RunnerException;
-import org.openjdk.jmh.runner.options.Options;
-import org.openjdk.jmh.runner.options.OptionsBuilder;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -31,25 +26,9 @@ import java.util.concurrent.TimeUnit;
 @Fork(value = 1)
 @State(Scope.Thread)
 public class LaunchJMH {
-
-    private static final String[] templates = {
-            "thymeleaf",
-            "kotlinx",
-            "htmlFlow"
-    };
     
     static ConfigurableApplicationContext context;
     static WebTestClient webTestClient;
-    
-    public static void main(String[] args) throws RunnerException {
-        
-        Options opt = new OptionsBuilder()
-                .include(LaunchJMH.class.getSimpleName())
-                .forks(1)
-                .build();
-        
-        new Runner(opt).run();
-    }
     
     @Setup(Level.Trial)
     public synchronized void startupSpring() {
@@ -81,10 +60,10 @@ public class LaunchJMH {
         }
     }
     
-    
-    private String benchmarkTemplate(int templateIdx) {
+    @Benchmark
+    public String benchmarkThymeleaf() {
         return new String(webTestClient.get()
-                .uri(URI.create("/async/"+templates[templateIdx]))
+                .uri(URI.create("/async/thymeleaf"))
                 .accept(MediaType.ALL)
                 .exchange()
                 .expectStatus()
@@ -93,17 +72,24 @@ public class LaunchJMH {
     }
     
     @Benchmark
-    public String benchmarkThymeleaf() {
-        return benchmarkTemplate(0);
-    }
-    
-    @Benchmark
     public String benchmarkKotlinx() {
-        return benchmarkTemplate(1);
+        return new String(webTestClient.get()
+                .uri(URI.create("/async/kotlinx"))
+                .accept(MediaType.ALL)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody().returnResult().getResponseBody());
     }
     
     @Benchmark
     public String benchmarkHtmlFlow() {
-        return benchmarkTemplate(2);
+        return new String(webTestClient.get()
+                .uri(URI.create("/async/htmlFlow"))
+                .accept(MediaType.ALL)
+                .exchange()
+                .expectStatus()
+                .isOk()
+                .expectBody().returnResult().getResponseBody());
     }
 }

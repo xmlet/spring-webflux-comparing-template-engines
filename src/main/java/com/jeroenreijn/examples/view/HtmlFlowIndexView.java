@@ -1,6 +1,5 @@
 package com.jeroenreijn.examples.view;
 
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.concurrent.CompletableFuture;
 
@@ -19,6 +18,13 @@ import reactor.core.publisher.Flux;
 public class HtmlFlowIndexView {
 
 	public CompletableFuture<Void> templatePresentations(OutputStreamWriter writer, Flux<Presentation> presentations) {
+		return HtmlFlow
+				.viewAsync(this::renderTemplate)
+				.threadSafe()
+				.writeAsync(writer, presentations);
+	}
+
+	public CompletableFuture<Void> templatePresentationsFromAppendable(Appendable writer, Flux<Presentation> presentations) {
 		return HtmlFlow
 				.viewAsync(this::renderTemplate)
 				.threadSafe()

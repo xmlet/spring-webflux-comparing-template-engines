@@ -7,16 +7,11 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.MonoSink;
-import reactor.core.publisher.SignalType;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
-
-import static java.util.Objects.requireNonNull;
 
 public class ReactiveResponseWriterImpl<T> implements ReactiveResponseWriter<T>{
     
