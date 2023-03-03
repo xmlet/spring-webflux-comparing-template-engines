@@ -50,7 +50,7 @@ public class PresentationsController {
 	public String showListWebflux(@PathVariable(value = "template") final String template,
 						   final Model model) {
 		System.out.printf("Using template %s%n", template);
-		final Flux<Presentation> presentations = presentationsService.findAllReactive().delayElements(Duration.ofSeconds(1L));
+		final Flux<Presentation> presentations = presentationsService.findAllReactive();
 		IReactiveDataDriverContextVariable rx = new ReactiveDataDriverContextVariable(presentations);
 		model.addAttribute("reactivedata", rx);
 		model.addAttribute("presentations", new AsyncWrapper(presentations));
