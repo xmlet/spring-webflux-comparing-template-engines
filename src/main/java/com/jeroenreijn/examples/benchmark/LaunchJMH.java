@@ -22,9 +22,16 @@ import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.Throughput)
-@OutputTimeUnit(TimeUnit.MINUTES)
+@OutputTimeUnit(TimeUnit.SECONDS)
 @Fork(value = 1)
 @State(Scope.Thread)
+// java -jar target/template-engines.jar -i 4 -wi 4 -f 1 -r 2 -w 2
+//
+//-i 4 iterations
+//-wi 4 warmup iterations
+//-f 1 fork
+//-r 2 run each iteration for 2 seconds
+//-w 2 run each warmup iteration for 2 seconds.
 public class LaunchJMH {
     
     static ConfigurableApplicationContext context;

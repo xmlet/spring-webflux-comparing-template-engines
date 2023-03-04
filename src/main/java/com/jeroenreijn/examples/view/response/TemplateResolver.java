@@ -8,5 +8,5 @@ import java.io.OutputStreamWriter;
 @FunctionalInterface
 public interface TemplateResolver<T> {
     
-    String resolve(MonoSink<DataBuffer> subscriber, T model, OutputStreamWriter writer, DataBuffer buffer);
+    void resolve(MonoSink<DataBuffer> subscriber, T model, OutputStreamWriter writer, DataBuffer buffer);
 }

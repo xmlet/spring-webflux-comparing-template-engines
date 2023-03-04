@@ -41,7 +41,6 @@ public class TrimouView extends AbstractView {
 		return responseWriter.write(serverWebExchange, presentations, (sub, res, writer, buffer) -> {
 			mustache.render(writer, res);
 			sub.success(buffer);
-			return "";
 		});
 	}
 }

@@ -21,15 +21,7 @@ public class ReactiveResponseWriterImpl<T> implements ReactiveResponseWriter<T>{
         final DataBuffer dataBuffer = response.bufferFactory().allocateBuffer();
         final OutputStreamWriter writer = new OutputStreamWriter(dataBuffer.asOutputStream());
     
-        return response.writeWith(Mono.create(sub -> {
-            try {
-                final String html = renderFunction.resolve(sub, model, writer, dataBuffer);
-                writer.append(html);
-                writer.flush();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }));
+        return response.writeWith(Mono.create(sub -> renderFunction.resolve(sub, model, writer, dataBuffer)));
     }
 
     @Override
