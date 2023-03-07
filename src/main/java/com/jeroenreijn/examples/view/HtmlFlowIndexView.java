@@ -5,6 +5,7 @@ import java.util.concurrent.CompletableFuture;
 
 import htmlflow.HtmlFlow;
 import htmlflow.HtmlPage;
+import htmlflow.HtmlViewAsync;
 import org.xmlet.htmlapifaster.Body;
 import org.xmlet.htmlapifaster.Div;
 import org.xmlet.htmlapifaster.EnumMediaType;
@@ -17,21 +18,21 @@ import reactor.core.publisher.Flux;
 
 public class HtmlFlowIndexView {
 
-	public CompletableFuture<Void> templatePresentations(OutputStreamWriter writer, Flux<Presentation> presentations) {
-		return HtmlFlow
-				.viewAsync(this::renderTemplate)
-				.threadSafe()
+	static HtmlViewAsync page = HtmlFlow
+			.viewAsync(HtmlFlowIndexView::renderTemplate)
+			.threadSafe();
+
+	public static CompletableFuture<Void> templatePresentations(OutputStreamWriter writer, Flux<Presentation> presentations) {
+		return page
 				.writeAsync(writer, presentations);
 	}
 
-	public CompletableFuture<Void> templatePresentationsFromAppendable(Appendable writer, Flux<Presentation> presentations) {
-		return HtmlFlow
-				.viewAsync(this::renderTemplate)
-				.threadSafe()
+	public static CompletableFuture<Void> templatePresentationsFromAppendable(Appendable writer, Flux<Presentation> presentations) {
+		return page
 				.writeAsync(writer, presentations);
 	}
 
-	private void renderTemplate(HtmlPage view) {
+	private static void renderTemplate(HtmlPage view) {
 		view
 				.html()
 				.head()

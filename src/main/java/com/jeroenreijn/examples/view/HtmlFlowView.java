@@ -36,7 +36,7 @@ public class HtmlFlowView extends AbstractView {
 	}
 
 	private CompletableFuture<Void> renderHtmlFlowAsync(Flux<Presentation> presentations, OutputStreamWriter writer) {
-		return new HtmlFlowIndexView()
+		return HtmlFlowIndexView
 				.templatePresentations(writer, presentations);
 	}
 }
