@@ -19,8 +19,7 @@ import reactor.core.publisher.Flux;
 public class HtmlFlowIndexView {
 
 	static HtmlViewAsync page = HtmlFlow
-			.viewAsync(HtmlFlowIndexView::renderTemplate)
-			.threadSafe();
+			.viewAsync(HtmlFlowIndexView::renderTemplate);
 
 	public static CompletableFuture<Void> templatePresentations(OutputStreamWriter writer, Flux<Presentation> presentations) {
 		return page

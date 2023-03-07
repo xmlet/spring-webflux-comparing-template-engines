@@ -241,6 +241,11 @@ class PresentationIntegrationTest {
                   <div class="pb-2 mt-4 mb-3 border-bottom">
                     <h1>JFall 2013 Presentations - kotlinx.html</h1>
                   </div>
+                </div>
+                <script src="/webjars/jquery/3.1.1/jquery.min.js"></script>
+                <script src="/webjars/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+              </body>
+            </html>
             <div class="card mb-3 shadow-sm rounded">
               <div class="card-header">
                 <h3 class="card-title">Shootout! Template engines on the JVM - Jeroen Reijn</h3>
