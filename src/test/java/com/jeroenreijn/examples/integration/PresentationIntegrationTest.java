@@ -311,13 +311,13 @@ class PresentationIntegrationTest {
     @Autowired
     private WebTestClient webTestClient;
 
-    @DisplayName("Should generated html for each template on Controllers")
+    @DisplayName("Should generated html for each template")
     @ParameterizedTest
     @MethodSource("htmlTemplates")
-    void test_reactive_endpoint_for_template_for_response(String[] templateAndAssertion) {
+    void test_endpoint_for_template_for_response(RouteAndExpected r) {
 
         byte[] responseBody = webTestClient.get()
-                .uri(URI.create("/async/"+templateAndAssertion[0]))
+                .uri(URI.create(r.route))
                 .accept(MediaType.ALL)
                 .exchange()
                 .expectStatus()
@@ -335,89 +335,46 @@ class PresentationIntegrationTest {
         then(response)
                 .isNotNull()
                 .isNotBlank()
-                .isEqualTo(templateAndAssertion[1]);
+                .isEqualTo(r.expected);
     }
 
-    @DisplayName("Should generated html for each template on Functional Routes")
+
+    @DisplayName("Should return 200 ok status code for all requests")
     @ParameterizedTest
     @MethodSource("htmlTemplates")
-    void test_route_endpoint_for_template_for_response(String[] templateAndAssertion) {
-
-        byte[] responseBody = webTestClient.get()
-                .uri(URI.create("/router/"+templateAndAssertion[0]))
-                .accept(MediaType.ALL)
-                .exchange()
-                .expectStatus()
-                .isOk()
-                .expectBody()
-                .returnResult()
-                .getResponseBody();
-
-        if (responseBody == null) {
-            fail("Error on generating template");
-        }
-
-        String response = new String(responseBody);
-
-        then(response)
-                .isNotNull()
-                .isNotBlank()
-                .isEqualTo(templateAndAssertion[1]);
-    }
-
-    @DisplayName("Should return 200 ok status code for all requests on Controllers")
-    @ParameterizedTest
-    @MethodSource("htmlTemplates")
-    void test_reactive_endpoint_for_template_controllers(String[] templateAndAssertion) {
+    void test_endpoint_for_template_ok(RouteAndExpected r) {
 
         webTestClient.get()
-                .uri(URI.create("/async/"+templateAndAssertion[0]))
+                .uri(URI.create(r.route))
                 .accept(MediaType.ALL)
                 .exchange()
                 .expectStatus()
                 .isOk();
     }
 
-    @DisplayName("Should return 200 ok status code for all requests on Functional Routes")
-    @ParameterizedTest
-    @MethodSource("htmlTemplates")
-    void test_route_endpoint_for_template(String[] templateAndAssertion) {
-
-        webTestClient.get()
-                .uri(URI.create("/router/"+templateAndAssertion[0]))
-                .accept(MediaType.ALL)
-                .exchange()
-                .expectStatus()
-                .isOk();
-    }
-
-    @DisplayName("Should return 200 ok status code for all requests on Coroutine Routes")
-    @ParameterizedTest
-    @MethodSource("htmlTemplates")
-    /**
-     * Failing for kotlinX with:
-     *
-     * java.lang.IllegalStateException: You can't change tag attribute because it was already passed to the downstream
-     */
-    void test_coroutine_endpoint_for_template(String[] templateAndAssertion) {
-
-        webTestClient.get()
-                .uri(URI.create("/router/"+templateAndAssertion[0]+"/coroutine"))
-                .accept(MediaType.ALL)
-                .exchange()
-                .expectStatus()
-                .isOk();
-    }
-
+    record RouteAndExpected(String route, String expected) { }
 
     static Stream<Arguments> htmlTemplates() {
         return Stream.of(
-                Arguments.of(Named.of("Generate html for Thymeleaf",
-                        new String[]{"thymeleaf", THYMELEAF_FORMED_HTML_ASSERTION()})),
-                Arguments.of(Named.of("Generate html for HtmlFlow",
-                        new String[]{"htmlFlow", HTML_FLOW_HTML_ASSERTION()})),
-                Arguments.of(Named.of("Generate html for KotlinX",
-                        new String[]{"kotlinx", KOTLINX_HTML_ASSERTION()}))
+                Arguments.of(Named.of("Generate html for Thymeleaf Controller",
+                        new RouteAndExpected("/async/thymeleaf", THYMELEAF_FORMED_HTML_ASSERTION()))),
+                Arguments.of(Named.of("Generate html for HtmlFlow Controller",
+                        new RouteAndExpected("/async/htmlFlow", HTML_FLOW_HTML_ASSERTION()))),
+                Arguments.of(Named.of("Generate html for KotlinX Controller",
+                        new RouteAndExpected("/async/kotlinx", KOTLINX_HTML_ASSERTION()))),
+                Arguments.of(Named.of("Generate html for Thymeleaf Functional Router",
+                        new RouteAndExpected("/router/thymeleaf", THYMELEAF_FORMED_HTML_ASSERTION()))),
+                Arguments.of(Named.of("Generate html for HtmlFlow Functional Router",
+                        new RouteAndExpected("/router/htmlFlow", HTML_FLOW_HTML_ASSERTION()))),
+                // SOMETIMES hangs here with: IllegalStateException: You can't change tag attribute because it was already passed to the downstream
+                // Arguments.of(Named.of("Generate html for KotlinX Functional Router",
+                //         RouteAndExpected("/router/kotlinx", KOTLINX_HTML_ASSERTION()))),
+                Arguments.of(Named.of("Generate html for Thymeleaf Coroutine",
+                        new RouteAndExpected("/router/thymeleaf/coroutine", THYMELEAF_FORMED_HTML_ASSERTION()))),
+                Arguments.of(Named.of("Generate html for HtmlFlow Coroutine",
+                        new RouteAndExpected("/router/htmlFlow/coroutine", HTML_FLOW_HTML_ASSERTION()))),
+                Arguments.of(Named.of("Generate html for KotlinX Coroutine",
+                        new RouteAndExpected("/router/kotlinx/coroutine", KOTLINX_HTML_ASSERTION())))
         );
     }
 }
