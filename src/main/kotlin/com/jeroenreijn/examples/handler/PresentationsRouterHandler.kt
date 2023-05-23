@@ -3,6 +3,8 @@ package com.jeroenreijn.examples.handler
 import com.jeroenreijn.examples.repository.PresentationRepo
 import com.jeroenreijn.examples.router.resolver.HtmlFlowResolver
 import com.jeroenreijn.examples.router.resolver.KotlinXResolver
+import kotlinx.coroutines.reactive.awaitSingle
+import org.reactivestreams.Publisher
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -24,13 +26,14 @@ class PresentationsRouterHandler(private val repo : PresentationRepo) {
 
         val model = repo.findAllReactive()
 
-        val view = templateToResolver[template]?.resolveCoroutines(model)
+        val view: Publisher<String> = templateToResolver[template]?.resolve(model)
             ?: throw IndexOutOfBoundsException("No template with name $template")
 
         return ServerResponse
             .ok()
             .contentType(MediaType.TEXT_HTML)
-            .bodyValueAndAwait(view)
+            .body(view, object : ParameterizedTypeReference<String>() {})
+            .awaitSingle()
     }
 
     fun handleTemplate(req : ServerRequest) : Mono<ServerResponse> {

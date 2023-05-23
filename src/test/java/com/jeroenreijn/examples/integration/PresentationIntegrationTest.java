@@ -311,10 +311,10 @@ class PresentationIntegrationTest {
     @Autowired
     private WebTestClient webTestClient;
 
-    @DisplayName("Should generated html for each template")
+    @DisplayName("Should generated html for each template on Controllers")
     @ParameterizedTest
     @MethodSource("htmlTemplates")
-    void test_reactive_endpoint_for_template_blocking_for_response(String[] templateAndAssertion) {
+    void test_reactive_endpoint_for_template_for_response(String[] templateAndAssertion) {
 
         byte[] responseBody = webTestClient.get()
                 .uri(URI.create("/async/"+templateAndAssertion[0]))
@@ -338,10 +338,10 @@ class PresentationIntegrationTest {
                 .isEqualTo(templateAndAssertion[1]);
     }
 
-    @DisplayName("Should generated html for each template")
+    @DisplayName("Should generated html for each template on Functional Routes")
     @ParameterizedTest
     @MethodSource("htmlTemplates")
-    void test_route_endpoint_for_template_blocking_for_response(String[] templateAndAssertion) {
+    void test_route_endpoint_for_template_for_response(String[] templateAndAssertion) {
 
         byte[] responseBody = webTestClient.get()
                 .uri(URI.create("/router/"+templateAndAssertion[0]))
@@ -365,10 +365,10 @@ class PresentationIntegrationTest {
                 .isEqualTo(templateAndAssertion[1]);
     }
 
-    @DisplayName("Should return 200 ok status code for all requests")
+    @DisplayName("Should return 200 ok status code for all requests on Controllers")
     @ParameterizedTest
     @MethodSource("htmlTemplates")
-    void test_reactive_endpoint_for_template(String[] templateAndAssertion) {
+    void test_reactive_endpoint_for_template_controllers(String[] templateAndAssertion) {
 
         webTestClient.get()
                 .uri(URI.create("/async/"+templateAndAssertion[0]))
@@ -378,7 +378,7 @@ class PresentationIntegrationTest {
                 .isOk();
     }
 
-    @DisplayName("Should return 200 ok status code for all requests")
+    @DisplayName("Should return 200 ok status code for all requests on Functional Routes")
     @ParameterizedTest
     @MethodSource("htmlTemplates")
     void test_route_endpoint_for_template(String[] templateAndAssertion) {
@@ -391,9 +391,9 @@ class PresentationIntegrationTest {
                 .isOk();
     }
 
-    // @DisplayName("Should return 200 ok status code for all requests")
-    // @ParameterizedTest
-    // @MethodSource("htmlTemplates")
+    @DisplayName("Should return 200 ok status code for all requests on Coroutine Routes")
+    @ParameterizedTest
+    @MethodSource("htmlTemplates")
     /**
      * Failing for kotlinX with:
      *
