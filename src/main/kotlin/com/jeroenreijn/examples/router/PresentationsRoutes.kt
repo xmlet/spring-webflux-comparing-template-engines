@@ -10,6 +10,8 @@ import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.*
+import org.thymeleaf.spring5.context.webflux.IReactiveDataDriverContextVariable
+import org.thymeleaf.spring5.context.webflux.ReactiveDataDriverContextVariable
 import reactor.core.publisher.Mono
 
 @Component
@@ -18,6 +20,7 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
     @Bean
     fun presentationsCoRouter() = coRouter {
         "/router".nest {
+            GET("/thymeleaf/coroutine") { handleTemplateThymeleaf(it).awaitSingle() }
             GET("/htmlFlow/coroutine") { handleTemplateHtmlFlow().awaitSingle() }
             GET("/kotlinx/coroutine") { handleTemplateKotlinX().awaitSingle() }
         }
@@ -28,10 +31,23 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
         .route()
         .path("/router") { builder ->
             builder
+                .GET("/thymeleaf", this::handleTemplateThymeleaf)
                 .GET("/htmlFlow") { this.handleTemplateHtmlFlow() }
                 .GET("/kotlinx") { this.handleTemplateKotlinX() }
         }
         .build()
+
+
+    private fun handleTemplateThymeleaf(req: ServerRequest): Mono<ServerResponse> {
+        val model = mapOf<String, Any>(
+            "reactivedata" to ReactiveDataDriverContextVariable(repo.findAllReactive(), 1)
+        )
+        return ServerResponse
+            .ok()
+            .contentType(MediaType.TEXT_HTML)
+            .render("index-thymeleaf", model);
+    }
+
 
     private fun handleTemplateHtmlFlow() : Mono<ServerResponse> {
         val view = AppendableSink {
