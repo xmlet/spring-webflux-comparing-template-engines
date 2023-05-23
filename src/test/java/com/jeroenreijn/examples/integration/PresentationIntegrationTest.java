@@ -359,6 +359,19 @@ class PresentationIntegrationTest {
                 .isOk();
     }
 
+    @DisplayName("Should return 200 ok status code for all requests")
+    @ParameterizedTest
+    @MethodSource("htmlTemplates")
+    void test_coroutine_endpoint_for_template(String[] templateAndAssertion) {
+
+        webTestClient.get()
+                .uri(URI.create("/router/"+templateAndAssertion[0]+"/coroutine"))
+                .accept(MediaType.ALL)
+                .exchange()
+                .expectStatus()
+                .isOk();
+    }
+
 
     static Stream<Arguments> htmlTemplates() {
         return Stream.of(

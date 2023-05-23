@@ -20,7 +20,7 @@ class HtmlFlowResolver : TemplateResolver {
         }
     }
 
-    override suspend fun resolveCoroutines(presentations: List<Presentation>): String {
+    override suspend fun resolveCoroutines(presentations: Flux<Presentation>): String {
         val result = HtmlFlowAppendableSink().let {out ->
             out.asFlux().also {
                 htmlFlowTemplateCoroutine

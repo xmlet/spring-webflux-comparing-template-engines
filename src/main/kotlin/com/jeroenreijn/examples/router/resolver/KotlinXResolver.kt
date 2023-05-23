@@ -19,7 +19,7 @@ class KotlinXResolver : TemplateResolver {
             }
     }
 
-    override suspend fun resolveCoroutines(presentations: List<Presentation>): String {
+    override suspend fun resolveCoroutines(presentations: Flux<Presentation>): String {
         val result = KotlinXAppendableSink()
             .let { out ->
                 out.asFlux().also {

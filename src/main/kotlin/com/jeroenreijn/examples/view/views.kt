@@ -96,9 +96,10 @@ private fun htmlFlowArtistCoroutineViewTemplate(view: HtmlPage) {
         .div().attrClass("pb-2 mt-4 mb-3 border-bottom")
         .h1().text("JFall 2013 Presentations - HtmlFlow").`__`()
         .`__`() // div
-        .dynamic<List<Presentation>> { div, model ->
+        .await<Flux<Presentation>> { div, model, end ->
             model
-                .forEach {
+                .doOnComplete { end.finish() }
+                .subscribe {
                     template(
                         div,
                         it
@@ -182,7 +183,7 @@ fun kotlinXReactive(sink : KotlinXAppendableSink, presentations : Flux<Presentat
         }
 }
 
-fun kotlinXCoroutine(sink : KotlinXAppendableSink, presentations : List<Presentation>) {
+fun kotlinXCoroutine(sink: KotlinXAppendableSink, presentations: Flux<Presentation>) {
     sink
         .appendHTML()
         .html {
@@ -201,7 +202,8 @@ fun kotlinXCoroutine(sink : KotlinXAppendableSink, presentations : List<Presenta
                         h1 { text("JFall 2013 Presentations - kotlinx.html") }
                     }
                     presentations
-                        .forEach {
+                        .doOnComplete { sink.close() }
+                        .subscribe {
                             div {
                                 classes = setOf("card mb-3 shadow-sm rounded")
                                 div {

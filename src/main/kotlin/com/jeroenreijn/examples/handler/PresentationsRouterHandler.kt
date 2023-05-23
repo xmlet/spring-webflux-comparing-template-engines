@@ -22,7 +22,7 @@ class PresentationsRouterHandler(private val repo : PresentationRepo) {
     suspend fun handleCoroutineTemplate(req : ServerRequest) : ServerResponse {
         val template = req.templateName()
 
-        val model = repo.findAllCoroutines()
+        val model = repo.findAllReactive()
 
         val view = templateToResolver[template]?.resolveCoroutines(model)
             ?: throw IndexOutOfBoundsException("No template with name $template")
