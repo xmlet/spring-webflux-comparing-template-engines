@@ -9,7 +9,7 @@ import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.coRouter
 
 @Component
-class PresentationsRouter(private val presentationsHandler: PresentationsRouterHandler) {
+class PresentationsRoutes(private val presentationsHandler: PresentationsRouterHandler) {
 
     @Bean
     fun presentationsCoRouter() = coRouter {
