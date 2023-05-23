@@ -15,7 +15,7 @@ import reactor.core.publisher.Mono
 class PresentationsRouterHandler(private val repo : PresentationRepo) {
 
     private val templateToResolver = mapOf(
-        "kotlinX" to KotlinXResolver(),
+        "kotlinx" to KotlinXResolver(),
         "htmlFlow" to HtmlFlowResolver()
     )
 
