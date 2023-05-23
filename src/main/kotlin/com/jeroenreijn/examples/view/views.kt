@@ -1,31 +1,13 @@
 package com.jeroenreijn.examples.view
 
 import com.jeroenreijn.examples.model.Presentation
-import com.jeroenreijn.examples.view.appendable.KotlinXAppendableSink
+import com.jeroenreijn.examples.view.appendable.AppendableSink
 import htmlflow.HtmlFlow
 import htmlflow.HtmlPage
 import htmlflow.HtmlViewAsync
-import kotlinx.html.LinkMedia
-import kotlinx.html.LinkRel
-import kotlinx.html.MetaHttpEquiv
-import kotlinx.html.body
-import kotlinx.html.classes
-import kotlinx.html.div
-import kotlinx.html.h1
-import kotlinx.html.h3
-import kotlinx.html.head
-import kotlinx.html.html
-import kotlinx.html.link
-import kotlinx.html.meta
-import kotlinx.html.script
+import kotlinx.html.*
 import kotlinx.html.stream.appendHTML
-import kotlinx.html.title
-import kotlinx.html.unsafe
-import org.xmlet.htmlapifaster.Body
-import org.xmlet.htmlapifaster.Div
-import org.xmlet.htmlapifaster.EnumMediaType
-import org.xmlet.htmlapifaster.EnumRelType
-import org.xmlet.htmlapifaster.Html
+import org.xmlet.htmlapifaster.*
 import reactor.core.publisher.Flux
 
 
@@ -95,7 +77,7 @@ private fun presentationFragment(div: Div<Body<Html<HtmlPage>>>, presentation: P
         .`__`() // div
 }
 
-fun kotlinXReactive(sink : KotlinXAppendableSink, presentations : Flux<Presentation>) {
+fun kotlinXReactive(sink : AppendableSink, presentations : Flux<Presentation>) {
     sink
         .appendHTML()
         .html {
