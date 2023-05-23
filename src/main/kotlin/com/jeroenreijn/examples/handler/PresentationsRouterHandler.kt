@@ -21,21 +21,6 @@ class PresentationsRouterHandler(private val repo : PresentationRepo) {
         "htmlFlow" to HtmlFlowResolver()
     )
 
-    suspend fun handleCoroutineTemplate(req : ServerRequest) : ServerResponse {
-        val template = req.templateName()
-
-        val model = repo.findAllReactive()
-
-        val view: Publisher<String> = templateToResolver[template]?.resolve(model)
-            ?: throw IndexOutOfBoundsException("No template with name $template")
-
-        return ServerResponse
-            .ok()
-            .contentType(MediaType.TEXT_HTML)
-            .body(view, object : ParameterizedTypeReference<String>() {})
-            .awaitSingle()
-    }
-
     fun handleTemplate(req : ServerRequest) : Mono<ServerResponse> {
         val template = req.templateName()
 

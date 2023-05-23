@@ -1,6 +1,7 @@
 package com.jeroenreijn.examples.router
 
 import com.jeroenreijn.examples.handler.PresentationsRouterHandler
+import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.RouterFunction
@@ -14,7 +15,9 @@ class PresentationsRoutes(private val presentationsHandler: PresentationsRouterH
     @Bean
     fun presentationsCoRouter() = coRouter {
         "/router".nest {
-            GET("/{template}/coroutine", presentationsHandler::handleCoroutineTemplate)
+            GET("/{template}/coroutine") {
+                presentationsHandler.handleTemplate(it).awaitSingle()
+            }
         }
     }
 
