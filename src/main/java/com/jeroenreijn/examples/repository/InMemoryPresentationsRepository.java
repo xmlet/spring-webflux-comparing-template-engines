@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.jeroenreijn.examples.model.Presentation;
 import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
 
 public class InMemoryPresentationsRepository implements PresentationsRepository {
 
@@ -103,7 +104,9 @@ public class InMemoryPresentationsRepository implements PresentationsRepository 
 	
 	@Override
 	public Flux<Presentation> findAllReactive() {
-		return Flux.fromStream(() -> this.presentations.values().stream());
+		return Flux
+				.fromIterable(findAll())
+				.subscribeOn(Schedulers.single());
 	}
 	
 	@Override

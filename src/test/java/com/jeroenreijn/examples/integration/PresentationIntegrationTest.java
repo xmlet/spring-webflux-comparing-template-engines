@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class PresentationIntegrationTest {
 
-    private static final String THYMELEAF_FORMED_HTML_ASSERTION = """
+    private static final String THYMELEAF_FORMED_HTML_ASSERTION() { return """
             <!DOCTYPE html>
             <html>
             <head>
@@ -99,8 +99,8 @@ class PresentationIntegrationTest {
             </body>
             </html>
             """;
-
-    private static final String HTML_FLOW_HTML_ASSERTION = """
+    }
+    private static final String HTML_FLOW_HTML_ASSERTION() { return """
             <!DOCTYPE html>
             <html>
             	<head>
@@ -226,8 +226,8 @@ class PresentationIntegrationTest {
             		</script>
             	</body>
             </html>""";
-
-    private static final String KOTLINX_HTML_ASSERTION = """
+    }
+    private static final String KOTLINX_HTML_ASSERTION(){ return """
             <html>
               <head>
                 <meta charset="utf-8">
@@ -241,6 +241,11 @@ class PresentationIntegrationTest {
                   <div class="pb-2 mt-4 mb-3 border-bottom">
                     <h1>JFall 2013 Presentations - kotlinx.html</h1>
                   </div>
+                </div>
+                <script src="/webjars/jquery/3.1.1/jquery.min.js"></script>
+                <script src="/webjars/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+              </body>
+            </html>
             <div class="card mb-3 shadow-sm rounded">
               <div class="card-header">
                 <h3 class="card-title">Shootout! Template engines on the JVM - Jeroen Reijn</h3>
@@ -302,7 +307,7 @@ class PresentationIntegrationTest {
               <div class="card-body">Understanding data is increasingly important to create cutting-edge applications. A whole new data science field is emerging, with the open source R language as a leading technology. This statistical programming language is specifically designed for analyzing and understanding data.<br/><br/>In this session we approach R from the perspective of Java developers. How do you get up to speed quickly, what are the pitfalls to look out for?  Also we discuss how to bridge the divide between the R language and the JVM. After this session you can use your new skills to explore an exciting world of data analytics and machine learning! </div>
             </div>
             """;
-
+    }
     @Autowired
     private WebTestClient webTestClient;
 
@@ -376,11 +381,11 @@ class PresentationIntegrationTest {
     static Stream<Arguments> htmlTemplates() {
         return Stream.of(
                 Arguments.of(Named.of("Generate html for Thymeleaf",
-                        new String[]{"thymeleaf", THYMELEAF_FORMED_HTML_ASSERTION})),
+                        new String[]{"thymeleaf", THYMELEAF_FORMED_HTML_ASSERTION()})),
                 Arguments.of(Named.of("Generate html for HtmlFlow",
-                        new String[]{"htmlFlow", HTML_FLOW_HTML_ASSERTION})),
+                        new String[]{"htmlFlow", HTML_FLOW_HTML_ASSERTION()})),
                 Arguments.of(Named.of("Generate html for KotlinX",
-                        new String[]{"kotlinx", KOTLINX_HTML_ASSERTION}))
+                        new String[]{"kotlinx", KOTLINX_HTML_ASSERTION()}))
         );
     }
 }
