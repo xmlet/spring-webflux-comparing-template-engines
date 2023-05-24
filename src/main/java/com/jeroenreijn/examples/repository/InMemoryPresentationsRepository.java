@@ -1,5 +1,8 @@
 package com.jeroenreijn.examples.repository;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -106,7 +109,8 @@ public class InMemoryPresentationsRepository implements PresentationsRepository 
 	public Flux<Presentation> findAllReactive() {
 		return Flux
 				.fromIterable(findAll())
-				.subscribeOn(Schedulers.single());
+				.delaySubscription(Duration.ofMillis(1)); // Interleave and run on same thread
+				// .subscribeOn(Schedulers.single());     // Interleave on other thread may fail on KotlinX
 	}
 	
 	@Override

@@ -1,5 +1,6 @@
 package com.jeroenreijn.examples.integration;
 
+import com.jeroenreijn.examples.benchmark.LaunchJMH;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
@@ -7,20 +8,11 @@ import org.junit.jupiter.api.Named;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
-import org.springframework.test.web.reactive.server.WebTestClient;
 
-import java.net.URI;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.BDDAssertions.then;
-import static org.junit.jupiter.api.Assertions.fail;
 
-@SpringBootTest(properties = "spring.main.web-application-type=reactive")
-@AutoConfigureWebTestClient(timeout = "PT1M")
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 class PresentationIntegrationTest {
 
@@ -308,29 +300,20 @@ class PresentationIntegrationTest {
             </div>
             """;
     }
-    @Autowired
-    private WebTestClient webTestClient;
+
+    private static LaunchJMH jmh = new LaunchJMH();
+
+    static {
+        jmh.startupSpring();
+    }
 
     @DisplayName("Should generated html for each template")
     @ParameterizedTest
     @MethodSource("htmlTemplates")
     void test_endpoint_for_template_for_response(RouteAndExpected r) {
 
-        byte[] responseBody = webTestClient.get()
-                .uri(URI.create(r.route))
-                .accept(MediaType.ALL)
-                .exchange()
-                .expectStatus()
-                .isOk()
-                .expectBody()
-                .returnResult()
-                .getResponseBody();
-
-        if (responseBody == null) {
-            fail("Error on generating template");
-        }
-
-        String response = new String(responseBody);
+        jmh.route = r.route;
+        final var response = jmh.benchmarkTemplate();
 
         then(response)
                 .isNotNull()
@@ -344,12 +327,9 @@ class PresentationIntegrationTest {
     @MethodSource("htmlTemplates")
     void test_endpoint_for_template_ok(RouteAndExpected r) {
 
-        webTestClient.get()
-                .uri(URI.create(r.route))
-                .accept(MediaType.ALL)
-                .exchange()
-                .expectStatus()
-                .isOk();
+        jmh.route = r.route;
+        jmh.benchmarkTemplate();
+
     }
 
     record RouteAndExpected(String route, String expected) { }
@@ -367,8 +347,8 @@ class PresentationIntegrationTest {
                 Arguments.of(Named.of("Generate html for HtmlFlow Functional Router",
                         new RouteAndExpected("/router/htmlFlow", HTML_FLOW_HTML_ASSERTION()))),
                 // SOMETIMES hangs here with: IllegalStateException: You can't change tag attribute because it was already passed to the downstream
-                // Arguments.of(Named.of("Generate html for KotlinX Functional Router",
-                //         RouteAndExpected("/router/kotlinx", KOTLINX_HTML_ASSERTION()))),
+                Arguments.of(Named.of("Generate html for KotlinX Functional Router",
+                        new RouteAndExpected("/router/kotlinx", KOTLINX_HTML_ASSERTION()))),
                 Arguments.of(Named.of("Generate html for Thymeleaf Coroutine",
                         new RouteAndExpected("/router/thymeleaf/coroutine", THYMELEAF_FORMED_HTML_ASSERTION()))),
                 Arguments.of(Named.of("Generate html for HtmlFlow Coroutine",
