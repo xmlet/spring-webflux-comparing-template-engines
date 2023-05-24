@@ -108,8 +108,8 @@ public class InMemoryPresentationsRepository implements PresentationsRepository 
 	@Override
 	public Flux<Presentation> findAllReactive() {
 		return Flux
-				.fromIterable(findAll())
-				.delaySubscription(Duration.ofMillis(1)); // Interleave and run on same thread
+				.fromIterable(findAll());
+				// .delaySubscription(Duration.ofMillis(1)); // Interleave and run on same thread
 				// .subscribeOn(Schedulers.single());     // Interleave on other thread may fail on KotlinX
 	}
 	
