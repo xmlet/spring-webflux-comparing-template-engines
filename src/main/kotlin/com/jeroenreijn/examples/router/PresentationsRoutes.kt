@@ -97,7 +97,6 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
                     .writeAsync(this, repo.findAllReactive())
                     .thenAccept {this.close()}
             }
-            .asFlux()
 
         return ServerResponse
             .ok()
@@ -124,7 +123,6 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
         val view = AppendableSink {
                 kotlinXReactive(this, repo.findAllReactive())
             }
-            .asFlux()
         return ServerResponse
             .ok()
             .contentType(MediaType.TEXT_HTML)

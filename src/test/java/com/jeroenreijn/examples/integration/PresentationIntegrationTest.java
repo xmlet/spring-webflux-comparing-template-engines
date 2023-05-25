@@ -440,13 +440,13 @@ class PresentationIntegrationTest {
                 Arguments.of(Named.of("Generate html for HtmlFlow Functional Router",
                         new RouteAndExpected("/router/htmlFlow", HTML_FLOW_HTML_ASSERTION()))),
                 Arguments.of(Named.of("Generate html for KotlinX Functional Router",
-                        new RouteAndExpected("/router/kotlinx", KOTLINX_HTML_ASSERTION()))),
+                        new RouteAndExpected("/router/kotlinx", KOTLINX_HTML_ASSERTION() + KOTLINX_HTML_ASSERTION_SYNC()))),
                 Arguments.of(Named.of("Generate html for Thymeleaf Coroutine",
                         new RouteAndExpected("/router/thymeleaf/coroutine", THYMELEAF_FORMED_HTML_ASSERTION()))),
                 Arguments.of(Named.of("Generate html for HtmlFlow Coroutine",
                         new RouteAndExpected("/router/htmlFlow/coroutine", HTML_FLOW_HTML_ASSERTION()))),
                 Arguments.of(Named.of("Generate html for KotlinX Coroutine",
-                        new RouteAndExpected("/router/kotlinx/coroutine", KOTLINX_HTML_ASSERTION())))
+                        new RouteAndExpected("/router/kotlinx/coroutine", KOTLINX_HTML_ASSERTION() + KOTLINX_HTML_ASSERTION_SYNC())))
         );
     }
 }
