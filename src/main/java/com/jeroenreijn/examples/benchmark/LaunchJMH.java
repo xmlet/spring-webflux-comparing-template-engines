@@ -7,6 +7,7 @@ import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Level;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.annotations.OutputTimeUnit;
+import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
@@ -36,7 +37,20 @@ public class LaunchJMH {
     
     static ConfigurableApplicationContext context;
     static WebTestClient webTestClient;
-    
+
+    @Param({
+            // "/async/thymeleaf",
+            // "/async/htmlFlow",
+            // "/async/kotlinx",
+            "/router/thymeleaf",
+            "/router/htmlFlow",
+            "/router/kotlinx",
+            "/router/thymeleaf/coroutine",
+            "/router/htmlFlow/coroutine",
+            "/router/kotlinx/coroutine"
+    })
+    public String route;
+
     @Setup(Level.Trial)
     public synchronized void startupSpring() {
         try {
@@ -68,31 +82,9 @@ public class LaunchJMH {
     }
     
     @Benchmark
-    public String benchmarkThymeleaf() {
+    public String benchmarkTemplate() {
         return new String(webTestClient.get()
-                .uri(URI.create("/async/thymeleaf"))
-                .accept(MediaType.ALL)
-                .exchange()
-                .expectStatus()
-                .isOk()
-                .expectBody().returnResult().getResponseBody());
-    }
-    
-    @Benchmark
-    public String benchmarkKotlinx() {
-        return new String(webTestClient.get()
-                .uri(URI.create("/async/kotlinx"))
-                .accept(MediaType.ALL)
-                .exchange()
-                .expectStatus()
-                .isOk()
-                .expectBody().returnResult().getResponseBody());
-    }
-    
-    @Benchmark
-    public String benchmarkHtmlFlow() {
-        return new String(webTestClient.get()
-                .uri(URI.create("/async/htmlFlow"))
+                .uri(URI.create(route))
                 .accept(MediaType.ALL)
                 .exchange()
                 .expectStatus()
