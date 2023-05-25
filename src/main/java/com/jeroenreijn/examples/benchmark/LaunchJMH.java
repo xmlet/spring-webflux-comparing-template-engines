@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
 @Fork(value = 1)
-@State(Scope.Thread)
+@State(Scope.Benchmark)
 // java -jar target/template-engines.jar -i 4 -wi 4 -f 1 -r 2 -w 2
 //
 //-i 4 iterations
@@ -42,6 +42,9 @@ public class LaunchJMH {
             // "/async/thymeleaf",
             // "/async/htmlFlow",
             // "/async/kotlinx",
+            "/router/thymeleaf/sync",
+            "/router/htmlFlow/sync",
+            "/router/kotlinx/sync",
             "/router/thymeleaf",
             "/router/htmlFlow",
             "/router/kotlinx",
