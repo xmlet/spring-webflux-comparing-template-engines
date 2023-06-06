@@ -73,14 +73,14 @@ public class HtmlFlowIndexView {
 				.h5()
 				.of(h5 -> h5
 						.attrClass("card-title")
-						.text(presentation.getTitle() + " - " + presentation.getSpeakerName())
+						.text(presentation.title() + " - " + presentation.speakerName())
 				)
 				.__() // h5
 				.__() // div
 				.div()
 				.of(d -> d
 						.attrClass("card-body")
-						.text(presentation.getSummary())
+						.text(presentation.summary())
 				)
 				.__() // div
 				.__(); // div
