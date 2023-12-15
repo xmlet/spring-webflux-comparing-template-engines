@@ -9,4 +9,6 @@ class InMemoryPresentations(private val javaRepo : PresentationsRepository) : Pr
 
     override fun findAllReactive(): Flux<Presentation> = javaRepo.findAllReactive()
 
+    override fun findAllSync(): List<Presentation>  = javaRepo.findAll()
+
 }

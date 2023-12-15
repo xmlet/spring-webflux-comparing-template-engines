@@ -46,7 +46,7 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
 
     private fun handleTemplateThymeleafSync(): Mono<ServerResponse> {
         val model = mapOf<String, Any>(
-            "reactivedata" to repo.findAllReactive().collectList()
+            "reactivedata" to repo.findAllSync()
         )
         return ServerResponse
             .ok()
@@ -67,9 +67,8 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
 
     private fun handleTemplateHtmlFlowSync() : Mono<ServerResponse> {
         return repo
-            .findAllReactive()
-            .collectList()
-            .flatMap {
+            .findAllSync()
+            .let {
                 val html = htmlFlowTemplateSync.render(it)
                 ServerResponse
                     .ok()
@@ -106,9 +105,8 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
 
     private fun handleTemplateKotlinXSync() : Mono<ServerResponse> {
         return repo
-            .findAllReactive()
-            .collectList()
-            .flatMap { lst ->
+            .findAllSync()
+            .let { lst ->
                 val html = StringBuilder()
                     .also { strBuilder -> kotlinXSync(strBuilder, lst) }
                     .let { it.toString() }

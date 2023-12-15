@@ -3,6 +3,7 @@ package com.jeroenreijn.examples.repository;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -14,8 +15,9 @@ import reactor.core.scheduler.Schedulers;
 
 public class InMemoryPresentationsRepository implements PresentationsRepository {
 
-	private static AtomicLong counter = new AtomicLong();
-	private ConcurrentMap<Long, Presentation> presentations = new ConcurrentHashMap<>();
+	private static final AtomicLong counter = new AtomicLong();
+	private final ConcurrentMap<Long, Presentation> presentations = new ConcurrentHashMap<>();
+	private final List<Presentation> presentationList;
 
 	public InMemoryPresentationsRepository() {
 
@@ -89,11 +91,13 @@ public class InMemoryPresentationsRepository implements PresentationsRepository 
 		presentations.put(preso8.id(), preso8);
 		presentations.put(preso9.id(), preso9);
 		presentations.put(preso10.id(), preso10);
+
+		presentationList = presentations.values().stream().toList();
 	}
 
 	@Override
-	public Iterable<Presentation> findAll() {
-		return this.presentations.values();
+	public List<Presentation> findAll() {
+		return presentationList;
 	}
 	
 	@Override
