@@ -5,6 +5,7 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.util.List;
 import java.util.Optional;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -16,7 +17,7 @@ import reactor.core.scheduler.Schedulers;
 public class InMemoryPresentationsRepository implements PresentationsRepository {
 
 	private static final AtomicLong counter = new AtomicLong();
-	private final ConcurrentMap<Long, Presentation> presentations = new ConcurrentHashMap<>();
+	private final TreeMap<Long, Presentation> presentations = new TreeMap<>();
 	private final List<Presentation> presentationList;
 
 	public InMemoryPresentationsRepository() {
