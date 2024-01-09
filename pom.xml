@@ -19,13 +19,7 @@
 
 		<!-- Template engine versions -->
 		<thymeleaf.version>3.0.11.RELEASE</thymeleaf.version>
-		<handlebars.version>4.3.0</handlebars.version>
-		<mustache-spring-view.version>1.4</mustache-spring-view.version>
-		<mustache-java.version>0.9.5</mustache-java.version>
 		<htmlflow.version>4.0</htmlflow.version>
-		<trimou.version>2.5.0.Final</trimou.version>
-		<rocker.version>1.2.1</rocker.version>
-		<liqp.version>0.7.9</liqp.version>
 		<kotlin.version>1.7.0</kotlin.version>
 		<kotlinx.html.version>0.7.5</kotlinx.html.version>
 
@@ -81,18 +75,6 @@
 			<version>1.2.0</version>
 		</dependency>
 
-
-		<dependency>
-			<groupId>com.github.jknack</groupId>
-			<artifactId>handlebars-springmvc</artifactId>
-			<version>${handlebars.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.freemarker</groupId>
-			<artifactId>freemarker</artifactId>
-		</dependency>
-
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-mustache</artifactId>
@@ -104,19 +86,6 @@
 			<version>${htmlflow.version}</version>
 		</dependency>
 
-
-		<dependency>
-			<groupId>org.trimou</groupId>
-			<artifactId>trimou-core</artifactId>
-			<version>${trimou.version}</version>
-		</dependency>
-
-
-		<dependency>
-			<groupId>com.fizzed</groupId>
-			<artifactId>rocker-runtime</artifactId>
-			<version>${rocker.version}</version>
-		</dependency>
 
 		<dependency>
 			<groupId>org.jetbrains.kotlin</groupId>
@@ -154,12 +123,6 @@
 					<artifactId>spring-boot-starter-tomcat</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-
-		<dependency>
-			<groupId>nl.big-o</groupId>
-			<artifactId>liqp</artifactId>
-			<version>${liqp.version}</version>
 		</dependency>
 
 		<!-- Test -->
@@ -209,28 +172,6 @@
 								<sourceDir>${project.basedir}/src/main/kotlin</sourceDir>
 							</sourceDirs>
 						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>com.fizzed</groupId>
-				<artifactId>rocker-maven-plugin</artifactId>
-				<version>1.2.1</version>
-				<configuration>
-					<javaVersion>17</javaVersion>
-					<templateDirectory>${project.basedir}/src/main/resources/templates/rocker</templateDirectory>
-					<targetCharset>utf-8</targetCharset>
-					<outputDirectory>${project.build.directory}/generated-sources/rocker/</outputDirectory>
-					<skipTouch>true</skipTouch>
-				</configuration>
-				<executions>
-					<execution>
-						<id>generate-rocker-templates</id>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>generate</goal>
-						</goals>
 					</execution>
 				</executions>
 			</plugin>

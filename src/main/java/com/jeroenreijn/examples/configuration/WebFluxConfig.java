@@ -5,9 +5,6 @@ import com.jeroenreijn.examples.repository.InMemoryPresentationsRepository;
 import com.jeroenreijn.examples.repository.PresentationsRepository;
 import com.jeroenreijn.examples.view.HtmlFlowViewResolver;
 import com.jeroenreijn.examples.view.KotlinxHtmlViewResolver;
-import com.jeroenreijn.examples.view.LiqpViewResolver;
-import com.jeroenreijn.examples.view.RockerViewResolver;
-import com.jeroenreijn.examples.view.TrimouViewResolver;
 import com.jeroenreijn.examples.view.response.ReactiveResponseWriter;
 import com.jeroenreijn.examples.view.response.ReactiveResponseWriterImpl;
 import org.springframework.beans.BeansException;
@@ -38,10 +35,7 @@ public class WebFluxConfig implements ApplicationContextAware, WebFluxConfigurer
 	
 	@Override
 	public void configureViewResolvers(ViewResolverRegistry registry) {
-		registry.viewResolver(this.rockerViewResolver());
 		registry.viewResolver(this.htmlFlowViewResolver());
-		registry.viewResolver(this.trimouViewResolver());
-		registry.viewResolver(this.liqpViewResolver());
 		registry.viewResolver(this.kotlinxHtmlViewResolver());
 		registry.viewResolver(applicationContext.getBean(ThymeleafReactiveViewResolver.class));
 	}
@@ -75,22 +69,6 @@ public class WebFluxConfig implements ApplicationContextAware, WebFluxConfigurer
 	@Bean
 	public ViewResolver htmlFlowViewResolver() {
 		return new HtmlFlowViewResolver();
-	}
-
-	@Bean
-	public TrimouViewResolver trimouViewResolver() {
-		MessageSource messageSource = applicationContext.getBean(MessageSource.class);
-		return new TrimouViewResolver(messageSource);
-	}
-
-	@Bean
-	public ViewResolver rockerViewResolver() {
-		return new RockerViewResolver();
-	}
-
-	@Bean
-	public LiqpViewResolver liqpViewResolver() {
-		return new LiqpViewResolver(applicationContext.getBean(MessageSource.class));
 	}
 
 	@Bean
