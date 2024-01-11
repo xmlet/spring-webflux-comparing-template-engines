@@ -2,17 +2,19 @@ package com.jeroenreijn.examples.view
 
 import com.jeroenreijn.examples.model.Presentation
 import com.jeroenreijn.examples.view.appendable.AppendableSink
-import htmlflow.HtmlFlow
-import htmlflow.HtmlPage
-import htmlflow.HtmlView
-import htmlflow.HtmlViewAsync
+import htmlflow.*
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.future.await
 import kotlinx.html.*
 import kotlinx.html.stream.appendHTML
 import org.xmlet.htmlapifaster.*
 import reactor.core.publisher.Flux
+import java.util.concurrent.CompletableFuture
 
 
-val htmlFlowTemplate: HtmlViewAsync = HtmlFlow.viewAsync { view ->
+val htmlFlowTemplate: HtmlViewAsync<Flux<Presentation>> = HtmlFlow.viewAsync { view ->
     view
         .html()
         .head()
@@ -53,7 +55,44 @@ val htmlFlowTemplate: HtmlViewAsync = HtmlFlow.viewAsync { view ->
         .`__`() // html
 }
 
-val htmlFlowTemplateSync: HtmlView = HtmlFlow.view { view -> view
+val htmlFlowTemplateSuspending: HtmlViewAsync<Flow<Presentation>> = HtmlFlow.viewAsync { view ->
+    view
+        .html()
+        .head()
+        .meta().attrCharset("UTF-8").`__`()
+        .meta().attrName("viewport").attrContent("width=device-width, initial-scale=1.0").`__`()
+        .meta()
+        .addAttr("http-equiv", "X-UA-Compatible")
+        .attrContent("IE=Edge")
+        .`__`() // meta
+        .title().text("JFall 2013 Presentations - HtmlFlow").`__`()
+        .link()
+        .attrRel(EnumRelType.STYLESHEET)
+        .attrHref("/webjars/bootstrap/4.3.1/css/bootstrap.min.css")
+        .attrMedia(EnumMediaType.SCREEN)
+        .`__`() // link
+        .`__`() // head
+        .body()
+        .div().attrClass("container")
+            .div().attrClass("pb-2 mt-4 mb-3 border-bottom")
+                .h1().text("JFall 2013 Presentations - HtmlFlow").`__`()
+            .`__`() // div
+        .suspending { div, model: Flow<Presentation> -> model
+            .collect {
+                presentationFragment(
+                    div,
+                    it
+                )
+            }
+        } // foreach
+        .`__`() // container
+        .script().attrSrc("/webjars/jquery/3.1.1/jquery.min.js").`__`()
+        .script().attrSrc("/webjars/bootstrap/4.3.1/js/bootstrap.min.js").`__`()
+        .`__`() // body
+        .`__`() // html
+}
+
+val htmlFlowTemplateSync: HtmlView<List<Presentation>> = HtmlFlow.view<List<Presentation>> { view -> view
     .html()
     .head()
     .meta().attrCharset("UTF-8").`__`()

@@ -1,12 +1,10 @@
 package com.jeroenreijn.examples.router
 
 import com.jeroenreijn.examples.repository.PresentationRepo
+import com.jeroenreijn.examples.view.*
 import com.jeroenreijn.examples.view.appendable.AppendableSink
-import com.jeroenreijn.examples.view.htmlFlowTemplate
-import com.jeroenreijn.examples.view.htmlFlowTemplateSync
-import com.jeroenreijn.examples.view.kotlinXReactive
-import com.jeroenreijn.examples.view.kotlinXSync
 import kotlinx.coroutines.reactive.awaitSingle
+import org.reactivestreams.Publisher
 import org.springframework.context.annotation.Bean
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.MediaType
@@ -25,7 +23,7 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
     fun presentationsCoRouter() = coRouter {
         "/router".nest {
             GET("/thymeleaf/coroutine") { handleTemplateThymeleaf().awaitSingle() }
-            GET("/htmlFlow/coroutine") { handleTemplateHtmlFlow().awaitSingle() }
+            GET("/htmlFlow/coroutine") { handleTemplateHtmlFlowFromFlux().awaitSingle() }
             GET("/kotlinx/coroutine") { handleTemplateKotlinX().awaitSingle() }
         }
     }
@@ -39,7 +37,8 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
                 .GET("/htmlFlow/sync") { this.handleTemplateHtmlFlowSync() }
                 .GET("/kotlinx/sync") { this.handleTemplateKotlinXSync() }
                 .GET("/thymeleaf") { this.handleTemplateThymeleaf() }
-                .GET("/htmlFlow") { this.handleTemplateHtmlFlow() }
+                .GET("/htmlFlow") { this.handleTemplateHtmlFlowFromFlux() }
+                .GET("/htmlFlow/fromFlow") { this.handleTemplateHtmlFlowFromFlow() }
                 .GET("/kotlinx") { this.handleTemplateKotlinX() }
         }
         .build()
@@ -78,7 +77,7 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
     }
 
 
-    private fun handleTemplateHtmlFlow() : Mono<ServerResponse> {
+    private fun handleTemplateHtmlFlowFromFlux() : Mono<ServerResponse> {
         /* SOLVE performance bottle neck
         return Mono
             .fromCompletionStage( htmlFlowTemplate
@@ -91,7 +90,7 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
             }
         */
 
-        val view = AppendableSink {
+        val view: Publisher<String> = AppendableSink {
                 htmlFlowTemplate
                     .writeAsync(this, repo.findAllReactive())
                     .thenAccept {this.close()}
@@ -102,6 +101,20 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
             .contentType(MediaType.TEXT_HTML)
             .body(view, object : ParameterizedTypeReference<String>() {})
     }
+
+    private fun handleTemplateHtmlFlowFromFlow() : Mono<ServerResponse> {
+        val view: Publisher<String> = AppendableSink {
+            htmlFlowTemplateSuspending
+                .writeAsync(this, repo.findAllFlow())
+                .thenAccept {this.close()}
+        }
+
+        return ServerResponse
+            .ok()
+            .contentType(MediaType.TEXT_HTML)
+            .body(view, object : ParameterizedTypeReference<String>() {})
+    }
+
 
     private fun handleTemplateKotlinXSync() : Mono<ServerResponse> {
         return repo
