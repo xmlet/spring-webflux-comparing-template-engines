@@ -39,12 +39,7 @@ val htmlFlowTemplate: HtmlViewAsync<Flux<Presentation>> = HtmlFlow.viewAsync { v
         .await<Flux<Presentation>>
         { div, model, onCompletion ->
             model
-                .doOnNext {
-                    presentationFragment(
-                        div,
-                        it
-                    )
-                }
+                .doOnNext { div.text(presentationFragment.render(it)) }
                 .doOnComplete { onCompletion.finish() }
                 .subscribe()
         } // foreach
@@ -79,10 +74,7 @@ val htmlFlowTemplateSuspending: HtmlViewAsync<Flow<Presentation>> = HtmlFlow.vie
             .`__`() // div
         .suspending { div, model: Flow<Presentation> -> model
             .collect {
-                presentationFragment(
-                    div,
-                    it
-                )
+                div.text(presentationFragment.render(it))
             }
         } // foreach
         .`__`() // container
@@ -116,10 +108,7 @@ val htmlFlowTemplateSync: HtmlView<List<Presentation>> = HtmlFlow.view<List<Pres
     .dynamic<List<Presentation>> { div, model ->
         model
             .forEach {
-                presentationFragment(
-                    div,
-                    it
-                )
+                div.text(presentationFragment.render(it))
             }
     } // foreach
     .`__`() // container
@@ -130,25 +119,18 @@ val htmlFlowTemplateSync: HtmlView<List<Presentation>> = HtmlFlow.view<List<Pres
 }.threadSafe()
 
 
-private fun presentationFragment(div: Div<Body<Html<HtmlPage>>>, presentation: Presentation) {
-    div
+val presentationFragment = HtmlFlow.view<Presentation> { page ->
+    page
         .div().attrClass("card mb-3 shadow-sm rounded")
         .div().attrClass("card-header")
         .h5()
-        .of {
-            it
-                .attrClass("card-title")
-                .text(presentation.title + " - " + presentation.speakerName)
-        }
+            .attrClass("card-title")
+            .dynamic<Presentation>{ h5, presentation -> h5.text(presentation.title + " - " + presentation.speakerName)}
         .`__`() // h5
         .`__`() // div
         .div()
-        .of {
-            it
-                .attrClass("card-body")
-                .text(presentation.summary)
-
-        }
+            .attrClass("card-body")
+            .dynamic<Presentation>{div, presentation -> div.text(presentation.summary)}
         .`__`() // div
         .`__`() // div
 }

@@ -11,6 +11,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
+import static java.util.Arrays.*;
+import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.BDDAssertions.then;
 
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
@@ -400,12 +402,19 @@ class PresentationIntegrationTest {
     void test_endpoint_for_template_for_response(RouteAndExpected r) {
 
         jmh.route = r.route;
-        final var response = jmh.benchmarkTemplate();
+        final String response = jmh.benchmarkTemplate();
 
-        then(response)
+        then(trimLines(response))
                 .isNotNull()
                 .isNotBlank()
-                .isEqualTo(r.expected);
+                .isEqualTo(trimLines(r.expected));
+    }
+
+    private static String trimLines(String lines) {
+        final String nl = System.lineSeparator();
+        return stream(lines.split(nl))
+                .map(line -> line.trim())
+                .collect(joining(nl));
     }
 
 
