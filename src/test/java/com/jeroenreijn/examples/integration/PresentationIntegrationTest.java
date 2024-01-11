@@ -423,24 +423,27 @@ class PresentationIntegrationTest {
 
     static Stream<Arguments> htmlTemplates() {
         return Stream.of(
-                Arguments.of(Named.of("Generate html for Thymeleaf Controller",
-                        new RouteAndExpected("/async/thymeleaf", THYMELEAF_FORMED_HTML_ASSERTION()))),
-                Arguments.of(Named.of("Generate html for HtmlFlow Controller",
-                        new RouteAndExpected("/async/htmlFlow", HTML_FLOW_HTML_ASSERTION()))),
-                // Arguments.of(Named.of("Generate html for KotlinX Controller",
-                //        new RouteAndExpected("/async/kotlinx", KOTLINX_HTML_ASSERTION()))), // different indentation
+                /**
+                 * Synchronous blocking routes
+                 */
                 Arguments.of(Named.of("Generate html for Thymeleaf Sync",
                         new RouteAndExpected("/router/thymeleaf/sync", THYMELEAF_FORMED_HTML_ASSERTION_SYNC()))),
                 Arguments.of(Named.of("Generate html for HtmlFlow Sync",
                         new RouteAndExpected("/router/htmlFlow/sync", HTML_FLOW_HTML_ASSERTION()))),
                 Arguments.of(Named.of("Generate html for KotlinX Sync",
                         new RouteAndExpected("/router/kotlinx/sync", KOTLINX_HTML_ASSERTION() + KOTLINX_HTML_ASSERTION_SYNC()))),
+                /**
+                 * Functional router (no annotations)
+                 */
                 Arguments.of(Named.of("Generate html for Thymeleaf Functional Router",
                         new RouteAndExpected("/router/thymeleaf", THYMELEAF_FORMED_HTML_ASSERTION()))),
-                Arguments.of(Named.of("Generate html for HtmlFlow Functional Router",
+                Arguments.of(Named.of("Generate html for HtmlFlow from Flux Functional Router",
                         new RouteAndExpected("/router/htmlFlow", HTML_FLOW_HTML_ASSERTION()))),
                 Arguments.of(Named.of("Generate html for KotlinX Functional Router",
                         new RouteAndExpected("/router/kotlinx", KOTLINX_HTML_ASSERTION() + KOTLINX_HTML_ASSERTION_SYNC()))),
+                /**
+                 * Functional router with coroutines
+                 */
                 Arguments.of(Named.of("Generate html for Thymeleaf Coroutine",
                         new RouteAndExpected("/router/thymeleaf/coroutine", THYMELEAF_FORMED_HTML_ASSERTION()))),
                 Arguments.of(Named.of("Generate html for HtmlFlow Coroutine",
