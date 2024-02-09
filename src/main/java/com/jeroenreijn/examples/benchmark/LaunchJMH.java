@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.SECONDS)
 @Fork(value = 1)
 @State(Scope.Benchmark)
-// java -jar target/template-engines.jar -i 4 -wi 4 -f 1 -r 2 -w 2
+// java -jar target/template-engines.jar -i 4 -wi 4 -f 1 -r 2 -w 2 -p route=/router/thymeleaf,/router/htmlFlow,/router/kotlinx
 //
 //-i 4 iterations
 //-wi 4 warmup iterations
