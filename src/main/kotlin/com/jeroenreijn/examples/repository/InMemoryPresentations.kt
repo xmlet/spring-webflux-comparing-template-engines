@@ -6,17 +6,16 @@ import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.reactive.asFlow
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
+import java.time.Duration
 
 @Repository
 class InMemoryPresentations() : PresentationRepo {
 
     private val presentationsList = mutableListOf<Presentation>()
-    private val presentationsReactive = Flux.fromIterable(presentationsList)
+    private val presentationsReactive = Flux.fromIterable(presentationsList) // .delayElements(Duration.ofMillis(300))
     private val presentationsFlow = presentationsReactive.asFlow()
 
     override fun findAllReactive(): Flux<Presentation> = presentationsReactive
-
-    override fun findAllSync(): List<Presentation>  = presentationsList
 
     override fun findAllFlow(): Flow<Presentation>  = presentationsFlow
 

@@ -8,7 +8,5 @@ sealed interface PresentationRepo {
 
     fun findAllReactive() : Flux<Presentation>
 
-    fun findAllSync() : List<Presentation>
-
     fun findAllFlow(): Flow<Presentation>;
 }

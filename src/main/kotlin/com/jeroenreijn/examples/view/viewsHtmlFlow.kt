@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.collect
 import org.xmlet.htmlapifaster.*
 import reactor.core.publisher.Flux
 
-val htmlFlowTemplate: HtmlViewAsync<Flux<Presentation>> = HtmlFlow.viewAsync { view ->
+val htmlFlowTemplate: HtmlViewAsync<Flux<Presentation>> = HtmlFlow.viewAsync<Flux<Presentation>?> { view ->
     view
         .html()
         .head()
@@ -41,7 +41,7 @@ val htmlFlowTemplate: HtmlViewAsync<Flux<Presentation>> = HtmlFlow.viewAsync { v
         .script().attrSrc("/webjars/bootstrap/4.3.1/js/bootstrap.min.js").`__`()
         .`__`() // body
         .`__`() // html
-}
+}.threadSafe()
 
 val htmlFlowTemplateSuspending: HtmlViewAsync<Flow<Presentation>> = HtmlFlow.viewAsync { view ->
     view
@@ -77,7 +77,7 @@ val htmlFlowTemplateSuspending: HtmlViewAsync<Flow<Presentation>> = HtmlFlow.vie
         .`__`() // html
 }
 
-val htmlFlowTemplateSync: HtmlView<List<Presentation>> = HtmlFlow.view<List<Presentation>> { view -> view
+val htmlFlowTemplateSync: HtmlView<Flux<Presentation>> = HtmlFlow.view<Flux<Presentation>> { view -> view
     .html()
     .head()
     .meta().attrCharset("UTF-8").`__`()
@@ -98,11 +98,12 @@ val htmlFlowTemplateSync: HtmlView<List<Presentation>> = HtmlFlow.view<List<Pres
     .div().attrClass("pb-2 mt-4 mb-3 border-bottom")
     .h1().text("JFall 2013 Presentations - HtmlFlow").`__`()
     .`__`() // div
-    .dynamic<List<Presentation>> { div, model ->
+    .dynamic<Flux<Presentation>> { div, model ->
         model
-            .forEach {
+            .doOnNext {
                 div.text(presentationFragment.render(it))
             }
+            .blockLast()
     } // foreach
     .`__`() // container
     .script().attrSrc("/webjars/jquery/3.1.1/jquery.min.js").`__`()
@@ -126,4 +127,4 @@ val presentationFragment = HtmlFlow.view<Presentation> { page ->
             .dynamic<Presentation>{div, presentation -> div.text(presentation.summary)}
         .`__`() // div
         .`__`() // div
-}
+}.setIndented(false)

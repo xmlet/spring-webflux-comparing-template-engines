@@ -3,14 +3,13 @@ package com.jeroenreijn.examples.router
 import com.jeroenreijn.examples.repository.PresentationRepo
 import com.jeroenreijn.examples.view.*
 import com.jeroenreijn.examples.view.appendable.AppendableSink
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.reactive.awaitSingle
-import org.reactivestreams.Publisher
+import kotlinx.coroutines.withContext
 import org.springframework.context.annotation.Bean
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.server.RouterFunction
-import org.springframework.web.reactive.function.server.RouterFunctions
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.coRouter
 import org.thymeleaf.spring5.context.webflux.ReactiveDataDriverContextVariable
@@ -22,30 +21,32 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
     @Bean
     fun presentationsCoRouter() = coRouter {
         "/router".nest {
-            GET("/thymeleaf/coroutine") { handleTemplateThymeleaf().awaitSingle() }
-            GET("/htmlFlow/coroutine") { handleTemplateHtmlFlowFromFlux().awaitSingle() }
-            GET("/kotlinx/coroutine") { handleTemplateKotlinX().awaitSingle() }
+            GET("/thymeleaf") { handleTemplateThymeleaf().awaitSingle() }
+            GET("/htmlFlow") { handleTemplateHtmlFlowFromFlux().awaitSingle() }
+            GET("/kotlinx") { handleTemplateKotlinX().awaitSingle() }
+            /*
+             * For the next routes ee must switch context because
+             * we are using blocking IO in this KotlinXSync template.
+             * Otherwise, we will get an exception:
+             *   IllegalStateException: block()/blockFirst()/blockLast() are blocking, which is not supported in thread parallel-...
+             */
+            GET("/thymeleaf/sync") { handleTemplateThymeleafSync().awaitSingle() }
+            GET("/htmlFlow/sync") {
+                withContext(Dispatchers.IO) {
+                    handleTemplateHtmlFlowSync().awaitSingle()
+                }
+            }
+            GET("/kotlinx/sync") {
+                withContext(Dispatchers.IO) {
+                    handleTemplateKotlinXSync().awaitSingle()
+                }
+            }
         }
     }
 
-    @Bean
-    fun presentationsRouter(): RouterFunction<ServerResponse> = RouterFunctions
-        .route()
-        .path("/router") { builder ->
-            builder
-                .GET("/thymeleaf/sync") { this.handleTemplateThymeleafSync() }
-                .GET("/htmlFlow/sync") { this.handleTemplateHtmlFlowSync() }
-                .GET("/kotlinx/sync") { this.handleTemplateKotlinXSync() }
-                .GET("/thymeleaf") { this.handleTemplateThymeleaf() }
-                .GET("/htmlFlow") { this.handleTemplateHtmlFlowFromFlux() }
-                .GET("/htmlFlow/fromFlow") { this.handleTemplateHtmlFlowFromFlow() }
-                .GET("/kotlinx") { this.handleTemplateKotlinX() }
-        }
-        .build()
-
     private fun handleTemplateThymeleafSync(): Mono<ServerResponse> {
         val model = mapOf<String, Any>(
-            "reactivedata" to repo.findAllSync()
+            "reactivedata" to repo.findAllReactive().collectList()
         )
         return ServerResponse
             .ok()
@@ -65,15 +66,17 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
 
 
     private fun handleTemplateHtmlFlowSync() : Mono<ServerResponse> {
-        return repo
-            .findAllSync()
-            .let {
-                val html = htmlFlowTemplateSync.render(it)
-                ServerResponse
-                    .ok()
-                    .contentType(MediaType.TEXT_HTML)
-                    .bodyValue(html)
-            }
+        val view = AppendableSink {
+            htmlFlowTemplateSync
+                .setOut(this)
+                .write(repo.findAllReactive())
+            this.close()
+        }
+
+        return ServerResponse
+            .ok()
+            .contentType(MediaType.TEXT_HTML)
+            .body(view.asFlux(), object : ParameterizedTypeReference<String>() {})
     }
 
 
@@ -90,7 +93,7 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
             }
         */
 
-        val view: Publisher<String> = AppendableSink {
+        val view = AppendableSink {
                 htmlFlowTemplate
                     .writeAsync(this, repo.findAllReactive())
                     .thenAccept {this.close()}
@@ -99,11 +102,11 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
         return ServerResponse
             .ok()
             .contentType(MediaType.TEXT_HTML)
-            .body(view, object : ParameterizedTypeReference<String>() {})
+            .body(view.asFlux(), object : ParameterizedTypeReference<String>() {})
     }
 
     private fun handleTemplateHtmlFlowFromFlow() : Mono<ServerResponse> {
-        val view: Publisher<String> = AppendableSink {
+        val view = AppendableSink {
             htmlFlowTemplateSuspending
                 .writeAsync(this, repo.findAllFlow())
                 .thenAccept {this.close()}
@@ -112,22 +115,19 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
         return ServerResponse
             .ok()
             .contentType(MediaType.TEXT_HTML)
-            .body(view, object : ParameterizedTypeReference<String>() {})
+            .body(view.asFlux(), object : ParameterizedTypeReference<String>() {})
     }
 
 
     private fun handleTemplateKotlinXSync() : Mono<ServerResponse> {
-        return repo
-            .findAllSync()
-            .let { lst ->
-                val html = StringBuilder()
-                    .also { strBuilder -> kotlinXSync(strBuilder, lst) }
-                    .let { it.toString() }
-                ServerResponse
-                    .ok()
-                    .contentType(MediaType.TEXT_HTML)
-                    .bodyValue(html)
-            }
+        val view = AppendableSink {
+            kotlinXSync(this, repo.findAllReactive())
+            this.close()
+        }
+        return ServerResponse
+            .ok()
+            .contentType(MediaType.TEXT_HTML)
+            .body(view.asFlux(), object : ParameterizedTypeReference<String>() {})
     }
 
     private fun handleTemplateKotlinX() : Mono<ServerResponse> {
@@ -137,6 +137,6 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
         return ServerResponse
             .ok()
             .contentType(MediaType.TEXT_HTML)
-            .body(view, object : ParameterizedTypeReference<String>() {})
+            .body(view.asFlux(), object : ParameterizedTypeReference<String>() {})
     }
 }

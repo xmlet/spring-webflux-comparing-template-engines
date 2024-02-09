@@ -39,18 +39,12 @@ public class LaunchJMH {
     static WebTestClient webTestClient;
 
     @Param({
-            // "/async/thymeleaf",
-            // "/async/htmlFlow",
-            // "/async/kotlinx",
             "/router/thymeleaf/sync",
             "/router/htmlFlow/sync",
             "/router/kotlinx/sync",
             "/router/thymeleaf",
             "/router/htmlFlow",
             "/router/kotlinx",
-            "/router/thymeleaf/coroutine",
-            "/router/htmlFlow/coroutine",
-            "/router/kotlinx/coroutine"
     })
     public String route;
 

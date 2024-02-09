@@ -53,7 +53,7 @@ fun kotlinXReactive(sink : AppendableSink, presentations : Flux<Presentation>) {
         }
 }
 
-fun kotlinXSync(sink : Appendable, presentations : List<Presentation>) {
+fun kotlinXSync(sink : Appendable, presentations : Flux<Presentation>) {
     sink
         .appendHTML()
         .html {
@@ -72,7 +72,7 @@ fun kotlinXSync(sink : Appendable, presentations : List<Presentation>) {
                         h1 { text("JFall 2013 Presentations - kotlinx.html") }
                     }
                     presentations
-                        .forEach {
+                        .doOnNext {
                             div {
                                 classes = setOf("card mb-3 shadow-sm rounded")
                                 div {
@@ -88,6 +88,7 @@ fun kotlinXSync(sink : Appendable, presentations : List<Presentation>) {
                                 }
                             }
                         }
+                        .blockLast()
                 }
 
                 script { src = "/webjars/jquery/3.1.1/jquery.min.js" }
