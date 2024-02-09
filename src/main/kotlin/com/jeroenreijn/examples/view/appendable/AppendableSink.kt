@@ -4,18 +4,30 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Sinks
 
 
-class AppendableSink(block: AppendableSink.() -> Unit) : Appendable, AutoCloseable {
-    private val sink = Sinks.many().replay().all<String>()
+interface AppendableSink : Appendable, AutoCloseable {
+    fun asFlux(): Flux<String>
+}
 
-    init {
-        this.block()
-    }
+fun appendableSink(block: AppendableSink.() -> Unit) : AppendableSink {
+    val sink = AppendableSinkImpl()
+    sink.block()
+    return sink
+}
 
+
+suspend fun appendableSinkSuspendable(block: suspend AppendableSink.() -> Unit) : AppendableSink {
+    val sink = AppendableSinkImpl()
+    sink.block()
+    return sink
+}
+
+private class AppendableSinkImpl : AppendableSink {
+    val sink = Sinks.many().replay().all<String>()
     override fun close() {
         sink.emitComplete(Sinks.EmitFailureHandler.FAIL_FAST)
     }
 
-    fun asFlux(): Flux<String> {
+    override fun asFlux(): Flux<String> {
         return sink.asFlux()
     }
     override fun append(csq: CharSequence): Appendable {

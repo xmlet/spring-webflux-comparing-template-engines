@@ -356,8 +356,10 @@ class PresentationIntegrationTest {
                  */
                 Arguments.of(Named.of("Generate html for Thymeleaf Functional Router",
                         new RouteAndExpected("/router/thymeleaf", THYMELEAF_FORMED_HTML_ASSERTION()))),
-                Arguments.of(Named.of("Generate html for HtmlFlow from Flux Functional Router",
+                Arguments.of(Named.of("Generate html for HtmlFlow from Flux",
                         new RouteAndExpected("/router/htmlFlow", HTML_FLOW_HTML_ASSERTION()))),
+                Arguments.of(Named.of("Generate html for HtmlFlow from Suspending",
+                        new RouteAndExpected("/router/htmlFlow/suspending", HTML_FLOW_HTML_ASSERTION()))),
                 Arguments.of(Named.of("Generate html for KotlinX Functional Router",
                         new RouteAndExpected("/router/kotlinx", KOTLINX_HTML_ASSERTION())))
         );

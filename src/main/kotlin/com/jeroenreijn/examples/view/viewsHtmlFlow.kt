@@ -32,7 +32,7 @@ val htmlFlowTemplate: HtmlViewAsync<Flux<Presentation>> = HtmlFlow.viewAsync<Flu
         .await<Flux<Presentation>>
         { div, model, onCompletion ->
             model
-                .doOnNext { div.text(presentationFragment.render(it)) }
+                .doOnNext { div.raw(presentationFragment.render(it)) }
                 .doOnComplete { onCompletion.finish() }
                 .subscribe()
         } // foreach
@@ -43,9 +43,8 @@ val htmlFlowTemplate: HtmlViewAsync<Flux<Presentation>> = HtmlFlow.viewAsync<Flu
         .`__`() // html
 }.threadSafe()
 
-val htmlFlowTemplateSuspending: HtmlViewAsync<Flow<Presentation>> = HtmlFlow.viewAsync { view ->
-    view
-        .html()
+val htmlFlowTemplateSuspending: HtmlViewSuspend<Flow<Presentation>> = viewSuspend {
+        html()
         .head()
         .meta().attrCharset("UTF-8").`__`()
         .meta().attrName("viewport").attrContent("width=device-width, initial-scale=1.0").`__`()
@@ -65,9 +64,9 @@ val htmlFlowTemplateSuspending: HtmlViewAsync<Flow<Presentation>> = HtmlFlow.vie
             .div().attrClass("pb-2 mt-4 mb-3 border-bottom")
                 .h1().text("JFall 2013 Presentations - HtmlFlow").`__`()
             .`__`() // div
-        .suspending { div, model: Flow<Presentation> -> model
+        .suspending { model: Flow<Presentation> -> model
             .collect {
-                div.text(presentationFragment.render(it))
+                raw(presentationFragment.render(it))
             }
         } // foreach
         .`__`() // container
@@ -98,10 +97,10 @@ val htmlFlowTemplateSync: HtmlView<Flux<Presentation>> = HtmlFlow.view<Flux<Pres
     .div().attrClass("pb-2 mt-4 mb-3 border-bottom")
     .h1().text("JFall 2013 Presentations - HtmlFlow").`__`()
     .`__`() // div
-    .dynamic<Flux<Presentation>> { div, model ->
+    .dyn { model:Flux<Presentation> ->
         model
             .doOnNext {
-                div.text(presentationFragment.render(it))
+                raw(presentationFragment.render(it))
             }
             .blockLast()
     } // foreach
@@ -119,12 +118,12 @@ val presentationFragment = HtmlFlow.view<Presentation> { page ->
         .div().attrClass("card-header")
         .h5()
             .attrClass("card-title")
-            .dynamic<Presentation>{ h5, presentation -> h5.text(presentation.title + " - " + presentation.speakerName)}
+            .dyn{ presentation: Presentation -> raw(presentation.title + " - " + presentation.speakerName)}
         .`__`() // h5
         .`__`() // div
         .div()
             .attrClass("card-body")
-            .dynamic<Presentation>{div, presentation -> div.text(presentation.summary)}
+            .dyn{ presentation:Presentation -> raw(presentation.summary)}
         .`__`() // div
         .`__`() // div
 }.setIndented(false)

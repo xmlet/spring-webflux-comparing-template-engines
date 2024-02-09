@@ -19,7 +19,7 @@
 
 		<!-- Template engine versions -->
 		<thymeleaf.version>3.0.11.RELEASE</thymeleaf.version>
-		<htmlflow.version>4.3-SNAPSHOT</htmlflow.version>
+		<htmlflow.version>4.5-SNAPSHOT</htmlflow.version>
 		<kotlin.version>1.9.22</kotlin.version>
 		<kotlinx.html.version>0.7.5</kotlinx.html.version>
 

@@ -2,7 +2,8 @@ package com.jeroenreijn.examples.router
 
 import com.jeroenreijn.examples.repository.PresentationRepo
 import com.jeroenreijn.examples.view.*
-import com.jeroenreijn.examples.view.appendable.AppendableSink
+import com.jeroenreijn.examples.view.appendable.appendableSink
+import com.jeroenreijn.examples.view.appendable.appendableSinkSuspendable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.withContext
@@ -23,6 +24,7 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
         "/router".nest {
             GET("/thymeleaf") { handleTemplateThymeleaf().awaitSingle() }
             GET("/htmlFlow") { handleTemplateHtmlFlowFromFlux().awaitSingle() }
+            GET("/htmlFlow/suspending") { handleTemplateHtmlFlowSuspending().awaitSingle() }
             GET("/kotlinx") { handleTemplateKotlinX().awaitSingle() }
             /*
              * For the next routes ee must switch context because
@@ -66,7 +68,7 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
 
 
     private fun handleTemplateHtmlFlowSync() : Mono<ServerResponse> {
-        val view = AppendableSink {
+        val view = appendableSink {
             htmlFlowTemplateSync
                 .setOut(this)
                 .write(repo.findAllReactive())
@@ -93,7 +95,7 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
             }
         */
 
-        val view = AppendableSink {
+        val view = appendableSink {
                 htmlFlowTemplate
                     .writeAsync(this, repo.findAllReactive())
                     .thenAccept {this.close()}
@@ -105,13 +107,12 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
             .body(view.asFlux(), object : ParameterizedTypeReference<String>() {})
     }
 
-    private fun handleTemplateHtmlFlowFromFlow() : Mono<ServerResponse> {
-        val view = AppendableSink {
+    private suspend fun handleTemplateHtmlFlowSuspending() : Mono<ServerResponse> {
+        val view = appendableSinkSuspendable {
             htmlFlowTemplateSuspending
-                .writeAsync(this, repo.findAllFlow())
-                .thenAccept {this.close()}
+                .write(this, repo.findAllFlow())
+            this.close()
         }
-
         return ServerResponse
             .ok()
             .contentType(MediaType.TEXT_HTML)
@@ -120,7 +121,7 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
 
 
     private fun handleTemplateKotlinXSync() : Mono<ServerResponse> {
-        val view = AppendableSink {
+        val view = appendableSink {
             kotlinXSync(this, repo.findAllReactive())
             this.close()
         }
@@ -131,7 +132,7 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
     }
 
     private fun handleTemplateKotlinX() : Mono<ServerResponse> {
-        val view = AppendableSink {
+        val view = appendableSink {
                 kotlinXReactive(this, repo.findAllReactive())
             }
         return ServerResponse
