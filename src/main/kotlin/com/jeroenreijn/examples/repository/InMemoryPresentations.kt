@@ -7,17 +7,23 @@ import kotlinx.coroutines.reactive.asFlow
 import org.springframework.stereotype.Repository
 import reactor.core.publisher.Flux
 import java.time.Duration
+import java.time.Duration.ofMillis
 
 @Repository
-class InMemoryPresentations() : PresentationRepo {
+class InMemoryPresentations : PresentationRepo {
+
+    companion object {
+        var timeout: Long = 0
+    }
 
     private val presentationsList = mutableListOf<Presentation>()
-    private val presentationsReactive = Flux.fromIterable(presentationsList) // .delayElements(Duration.ofMillis(300))
-    private val presentationsFlow = presentationsReactive.asFlow()
+    private val presentationsReactive = Flux.fromIterable(presentationsList)
 
-    override fun findAllReactive(): Flux<Presentation> = presentationsReactive
-
-    override fun findAllFlow(): Flow<Presentation>  = presentationsFlow
+    override fun findAllReactive(): Flux<Presentation> = if(timeout == 0L) {
+        presentationsReactive
+    } else {
+        presentationsReactive.delayElements(ofMillis(timeout))
+    }
 
     init {
         var counter = 0L

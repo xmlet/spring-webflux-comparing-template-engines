@@ -1,10 +1,15 @@
 package com.jeroenreijn.examples.router
 
+import com.jeroenreijn.examples.model.Presentation
 import com.jeroenreijn.examples.repository.PresentationRepo
 import com.jeroenreijn.examples.view.*
 import com.jeroenreijn.examples.view.appendable.appendableSink
 import com.jeroenreijn.examples.view.appendable.appendableSinkSuspendable
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitSingle
 import kotlinx.coroutines.withContext
 import org.springframework.context.annotation.Bean
@@ -14,10 +19,15 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.coRouter
 import org.thymeleaf.spring5.context.webflux.ReactiveDataDriverContextVariable
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Component
-class PresentationsRoutes(private val repo : PresentationRepo) {
+class PresentationsRoutes(repo : PresentationRepo) {
+
+    private val scope = CoroutineScope(Dispatchers.Default)
+    private val presentationsFlux: Flux<Presentation> = repo.findAllReactive()
+    private val presentationsFlow: Flow<Presentation> = repo.findAllReactive().asFlow()
 
     @Bean
     fun presentationsCoRouter() = coRouter {
@@ -34,21 +44,17 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
              */
             GET("/thymeleaf/sync") { handleTemplateThymeleafSync().awaitSingle() }
             GET("/htmlFlow/sync") {
-                withContext(Dispatchers.IO) {
                     handleTemplateHtmlFlowSync().awaitSingle()
-                }
             }
             GET("/kotlinx/sync") {
-                withContext(Dispatchers.IO) {
                     handleTemplateKotlinXSync().awaitSingle()
-                }
             }
         }
     }
 
     private fun handleTemplateThymeleafSync(): Mono<ServerResponse> {
         val model = mapOf<String, Any>(
-            "reactivedata" to repo.findAllReactive().collectList()
+            "reactivedata" to presentationsFlux
         )
         return ServerResponse
             .ok()
@@ -58,7 +64,7 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
 
     private fun handleTemplateThymeleaf(): Mono<ServerResponse> {
         val model = mapOf<String, Any>(
-            "reactivedata" to ReactiveDataDriverContextVariable(repo.findAllReactive(), 1)
+            "reactivedata" to ReactiveDataDriverContextVariable(presentationsFlux, 1)
         )
         return ServerResponse
             .ok()
@@ -68,13 +74,13 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
 
 
     private fun handleTemplateHtmlFlowSync() : Mono<ServerResponse> {
-        val view = appendableSink {
+        val view = appendableSinkSuspendable {
             htmlFlowTemplateSync
                 .setOut(this)
-                .write(repo.findAllReactive())
+                .write(presentationsFlux)
             this.close()
         }
-
+        scope.launch { view.start() }
         return ServerResponse
             .ok()
             .contentType(MediaType.TEXT_HTML)
@@ -83,21 +89,9 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
 
 
     private fun handleTemplateHtmlFlowFromFlux() : Mono<ServerResponse> {
-        /* SOLVE performance bottle neck
-        return Mono
-            .fromCompletionStage( htmlFlowTemplate
-                .renderAsync(repo.findAllReactive()))
-            .flatMap {
-                ServerResponse
-                    .ok()
-                    .contentType(MediaType.TEXT_HTML)
-                    .bodyValue(it)
-            }
-        */
-
         val view = appendableSink {
                 htmlFlowTemplate
-                    .writeAsync(this, repo.findAllReactive())
+                    .writeAsync(this, presentationsFlux)
                     .thenAccept {this.close()}
             }
 
@@ -107,12 +101,13 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
             .body(view.asFlux(), object : ParameterizedTypeReference<String>() {})
     }
 
-    private suspend fun handleTemplateHtmlFlowSuspending() : Mono<ServerResponse> {
+    private fun handleTemplateHtmlFlowSuspending() : Mono<ServerResponse> {
         val view = appendableSinkSuspendable {
             htmlFlowTemplateSuspending
-                .write(this, repo.findAllFlow())
+                .write(this, presentationsFlow)
             this.close()
         }
+        scope.launch { view.start() }
         return ServerResponse
             .ok()
             .contentType(MediaType.TEXT_HTML)
@@ -121,10 +116,11 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
 
 
     private fun handleTemplateKotlinXSync() : Mono<ServerResponse> {
-        val view = appendableSink {
-            kotlinXSync(this, repo.findAllReactive())
+        val view = appendableSinkSuspendable {
+            kotlinXSync(this, presentationsFlux)
             this.close()
         }
+        scope.launch { view.start() }
         return ServerResponse
             .ok()
             .contentType(MediaType.TEXT_HTML)
@@ -133,7 +129,7 @@ class PresentationsRoutes(private val repo : PresentationRepo) {
 
     private fun handleTemplateKotlinX() : Mono<ServerResponse> {
         val view = appendableSink {
-                kotlinXReactive(this, repo.findAllReactive())
+                kotlinXReactive(this, presentationsFlux)
             }
         return ServerResponse
             .ok()
