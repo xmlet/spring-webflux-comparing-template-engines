@@ -6,4 +6,5 @@ import reactor.core.publisher.Flux
 sealed interface PresentationRepo {
 
     fun findAllReactive() : Flux<Presentation>
+
 }
