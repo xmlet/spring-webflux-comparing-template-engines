@@ -44,6 +44,7 @@ public class LaunchJMH {
             "/router/kotlinx/sync",
             "/router/thymeleaf",
             "/router/htmlFlow",
+            "/router/htmlFlow/suspending",
             "/router/kotlinx",
     })
     public String route;
