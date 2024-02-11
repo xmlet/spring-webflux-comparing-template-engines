@@ -2,42 +2,26 @@ package com.jeroenreijn.examples.view.appendable
 
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Sinks
+import java.io.Closeable
 
+class AppendableSink : Appendable, Closeable {
+    val sink: Sinks.Many<String> = Sinks.many().unicast().onBackpressureBuffer()
 
-interface AppendableSink : Appendable, AutoCloseable {
-    fun asFlux(): Flux<String>
-    suspend fun start()
-}
-
-fun appendableSink(block: AppendableSink.() -> Unit) : AppendableSink {
-    val sink = object : AppendableSinkImpl() {
-        override suspend fun start() {
-            // Nothing to do. Immediately invoke block()
-        }
-
+    inline fun start(block: AppendableSink.() -> Unit) : AppendableSink {
+        block()
+        return this
     }
-    sink.block()
-    return sink
-}
 
-
-fun appendableSinkSuspendable(block: suspend AppendableSink.() -> Unit) : AppendableSink {
-    val sink = object : AppendableSinkImpl() {
-        override suspend fun start() {
-            block()
-        }
-
+    suspend inline fun startSuspend(block: suspend AppendableSink.() -> Unit) : AppendableSink {
+        block()
+        return this
     }
-    return sink
-}
 
-private abstract class AppendableSinkImpl : AppendableSink {
-    val sink: Sinks.Many<String> = Sinks.many().replay().all<String>()
     override fun close() {
         sink.emitComplete(Sinks.EmitFailureHandler.FAIL_FAST)
     }
 
-    override fun asFlux(): Flux<String> {
+    fun asFlux(): Flux<String> {
         return sink.asFlux()
     }
     override fun append(csq: CharSequence): Appendable {

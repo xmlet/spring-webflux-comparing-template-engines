@@ -32,7 +32,7 @@ val htmlFlowTemplate: HtmlViewAsync<Flux<Presentation>> = HtmlFlow.viewAsync<Flu
         .await<Flux<Presentation>>
         { div, model, onCompletion ->
             model
-                .doOnNext { div.raw(presentationFragment.render(it)) }
+                .doOnNext { presentationFragment.renderAsync(it).thenApply { frag -> div.raw(frag) }}
                 .doOnComplete { onCompletion.finish() }
                 .subscribe()
         } // foreach
@@ -43,7 +43,7 @@ val htmlFlowTemplate: HtmlViewAsync<Flux<Presentation>> = HtmlFlow.viewAsync<Flu
         .`__`() // html
 }.threadSafe()
 
-val htmlFlowTemplateSuspending: HtmlViewSuspend<Flow<Presentation>> = viewSuspend {
+val htmlFlowTemplateSuspending: HtmlViewSuspend<Flow<Presentation>> = viewSuspend<Flow<Presentation>> {
         html()
         .head()
         .meta().attrCharset("UTF-8").`__`()
@@ -66,7 +66,7 @@ val htmlFlowTemplateSuspending: HtmlViewSuspend<Flow<Presentation>> = viewSuspen
             .`__`() // div
         .suspending { model: Flow<Presentation> -> model
             .collect {
-                raw(presentationFragment.render(it))
+                presentationFragment.renderAsync(it).thenApply { frag -> raw(frag) }
             }
         } // foreach
         .`__`() // container
@@ -74,7 +74,7 @@ val htmlFlowTemplateSuspending: HtmlViewSuspend<Flow<Presentation>> = viewSuspen
         .script().attrSrc("/webjars/bootstrap/4.3.1/js/bootstrap.min.js").`__`()
         .`__`() // body
         .`__`() // html
-}
+}.threadSafe()
 
 val htmlFlowTemplateSync: HtmlView<Flux<Presentation>> = HtmlFlow.view<Flux<Presentation>> { view -> view
     .html()
@@ -100,7 +100,7 @@ val htmlFlowTemplateSync: HtmlView<Flux<Presentation>> = HtmlFlow.view<Flux<Pres
     .dyn { model:Flux<Presentation> ->
         model
             .doOnNext {
-                raw(presentationFragment.render(it))
+                presentationFragment.renderAsync(it).thenApply { frag -> raw(frag) }
             }
             .blockLast()
     } // foreach
@@ -112,9 +112,8 @@ val htmlFlowTemplateSync: HtmlView<Flux<Presentation>> = HtmlFlow.view<Flux<Pres
 }.threadSafe()
 
 
-val presentationFragment = HtmlFlow.view<Presentation> { page ->
-    page
-        .div().attrClass("card mb-3 shadow-sm rounded")
+val presentationFragment = viewAsync<Presentation> {
+        div().attrClass("card mb-3 shadow-sm rounded")
         .div().attrClass("card-header")
         .h5()
             .attrClass("card-title")
@@ -126,4 +125,4 @@ val presentationFragment = HtmlFlow.view<Presentation> { page ->
             .dyn{ presentation:Presentation -> raw(presentation.summary)}
         .`__`() // div
         .`__`() // div
-}.setIndented(false)
+}.threadSafe()
