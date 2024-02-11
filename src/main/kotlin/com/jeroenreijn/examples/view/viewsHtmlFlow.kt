@@ -125,6 +125,4 @@ val presentationFragment = viewAsync<Presentation> {
             .dyn{ presentation:Presentation -> raw(presentation.summary)}
         .`__`() // div
         .`__`() // div
-}
-    .setIndented(false)
-    .threadSafe()
+}.threadSafe()
