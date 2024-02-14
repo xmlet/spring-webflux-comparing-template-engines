@@ -26,7 +26,7 @@ Build the project with
 
 Run the project with
 
-    java -jar target/template-engines.jar -i 4 -wi 4 -f 1 -r 2 -w 2 -p route=/router/thymeleaf,/router/htmlFlow,/router/kotlinx
+    java -jar target/template-engines.jar -i 4 -wi 4 -f 1 -r 2 -w 2 -p route=/thymeleaf,/htmlFlow,/kotlinx
 
 See the demo URLs:
 
