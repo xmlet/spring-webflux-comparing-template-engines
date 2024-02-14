@@ -9,13 +9,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
-import kotlinx.coroutines.reactive.awaitSingle
 import org.springframework.context.annotation.Bean
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
+import org.springframework.web.reactive.function.server.RouterFunctions
 import org.springframework.web.reactive.function.server.ServerResponse
-import org.springframework.web.reactive.function.server.coRouter
+import org.springframework.web.reactive.function.server.router
 import org.thymeleaf.spring5.context.webflux.ReactiveDataDriverContextVariable
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -37,17 +37,16 @@ class PresentationsRoutes(repo : PresentationRepo) {
     private val presentationsFlow: Flow<Presentation> = repo.findAllReactive().asFlow()
 
     @Bean
-    fun presentationsCoRouter() = coRouter {
-        "/router".nest {
-            GET("/thymeleaf") { handleTemplateThymeleaf().awaitSingle() }
-            GET("/htmlFlow") { handleTemplateHtmlFlowFromFlux().awaitSingle() }
-            GET("/htmlFlow/suspending") { handleTemplateHtmlFlowSuspending().awaitSingle() }
-            GET("/kotlinx") { handleTemplateKotlinX().awaitSingle() }
-            GET("/thymeleaf/sync") { handleTemplateThymeleafSync().awaitSingle() }
-            GET("/htmlFlow/sync") { handleTemplateHtmlFlowSync().awaitSingle() }
-            GET("/kotlinx/sync") { handleTemplateKotlinXSync().awaitSingle() }
-        }
+    fun presentationsRouter() = router {
+        GET("/thymeleaf") { handleTemplateThymeleaf() }
+        GET("/htmlFlow") { handleTemplateHtmlFlowFromFlux() }
+        GET("/htmlFlow/suspending") { handleTemplateHtmlFlowSuspending() }
+        GET("/kotlinx") { handleTemplateKotlinX() }
+        GET("/thymeleaf/sync") { handleTemplateThymeleafSync() }
+        GET("/htmlFlow/sync") { handleTemplateHtmlFlowSync() }
+        GET("/kotlinx/sync") { handleTemplateKotlinXSync() }
     }
+
 
     private fun handleTemplateThymeleafSync(): Mono<ServerResponse> {
         val model = mapOf<String, Any>(
