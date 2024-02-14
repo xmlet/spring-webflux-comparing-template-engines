@@ -516,22 +516,22 @@ class PresentationIntegrationTest {
                  * Synchronous blocking routes
                  */
                 Arguments.of(Named.of("Generate html for Thymeleaf Sync",
-                        new RouteAndExpected("/router/thymeleaf/sync", THYMELEAF_FORMED_HTML_ASSERTION_SYNC()))),
+                        new RouteAndExpected("/thymeleaf/sync", THYMELEAF_FORMED_HTML_ASSERTION_SYNC()))),
                 Arguments.of(Named.of("Generate html for HtmlFlow Sync",
-                        new RouteAndExpected("/router/htmlFlow/sync", HTML_FLOW_HTML_ASSERTION()))),
+                        new RouteAndExpected("/htmlFlow/sync", HTML_FLOW_HTML_ASSERTION()))),
                 Arguments.of(Named.of("Generate html for KotlinX Sync",
-                        new RouteAndExpected("/router/kotlinx/sync", KOTLINX_HTML_ASSERTION()))),
+                        new RouteAndExpected("/kotlinx/sync", KOTLINX_HTML_ASSERTION()))),
                 /**
                  * Functional router with coroutines
                  */
                 Arguments.of(Named.of("Generate html for Thymeleaf Functional Router",
-                        new RouteAndExpected("/router/thymeleaf", THYMELEAF_FORMED_HTML_ASSERTION()))),
+                        new RouteAndExpected("/thymeleaf", THYMELEAF_FORMED_HTML_ASSERTION()))),
                 Arguments.of(Named.of("Generate html for HtmlFlow from Flux",
-                        new RouteAndExpected("/router/htmlFlow", HTML_FLOW_HTML_ASSERTION()))),
+                        new RouteAndExpected("/htmlFlow", HTML_FLOW_HTML_ASSERTION()))),
                 Arguments.of(Named.of("Generate html for HtmlFlow from Suspending",
-                        new RouteAndExpected("/router/htmlFlow/suspending", HTML_FLOW_HTML_ASSERTION()))),
+                        new RouteAndExpected("/htmlFlow/suspending", HTML_FLOW_HTML_ASSERTION()))),
                 Arguments.of(Named.of("Generate html for KotlinX Functional Router",
-                        new RouteAndExpected("/router/kotlinx", KOTLINX_HTML_ASSERTION_MALFORMED())))
+                        new RouteAndExpected("/kotlinx", KOTLINX_HTML_ASSERTION_MALFORMED())))
         );
     }
 }
