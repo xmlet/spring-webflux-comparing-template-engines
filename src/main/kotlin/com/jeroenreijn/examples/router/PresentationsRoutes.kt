@@ -13,10 +13,9 @@ import org.springframework.context.annotation.Bean
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
-import org.springframework.web.reactive.function.server.RouterFunctions
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.router
-import org.thymeleaf.spring5.context.webflux.ReactiveDataDriverContextVariable
+import org.thymeleaf.spring6.context.webflux.ReactiveDataDriverContextVariable
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 

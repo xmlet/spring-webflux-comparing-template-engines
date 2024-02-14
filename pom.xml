@@ -3,9 +3,9 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.jeroenreijn</groupId>
-	<artifactId>spring-comparing-template-engines</artifactId>
+	<artifactId>spring-webflux-comparing-template-engines</artifactId>
 	<packaging>jar</packaging>
-	<version>0.8.0-SNAPSHOT</version>
+	<version>0.1.0-SNAPSHOT</version>
 	<name>template-engines</name>
 
 	<properties>
@@ -16,9 +16,9 @@
 		<jquery.version>3.1.1</jquery.version>
 		<bootstrap.version>4.3.1</bootstrap.version>
 		<rxjava.version>3.1.2</rxjava.version>
+		<spring.version>3.2.2</spring.version>
 
 		<!-- Template engine versions -->
-		<thymeleaf.version>3.0.11.RELEASE</thymeleaf.version>
 		<htmlflow.version>4.5-SNAPSHOT</htmlflow.version>
 		<kotlin.version>1.9.22</kotlin.version>
 		<kotlinx.html.version>0.7.5</kotlinx.html.version>
@@ -32,7 +32,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.4.5</version>
+		<version>3.2.2</version>
 		<relativePath />
 	</parent>
 
@@ -46,11 +46,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>javax.servlet</groupId>
-			<artifactId>jstl</artifactId>
-		</dependency>
-
-		<dependency>
 			<groupId>io.reactivex.rxjava3</groupId>
 			<artifactId>rxjava</artifactId>
 			<version>${rxjava.version}</version>
@@ -60,6 +55,7 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+			<version>${spring.version}</version>
 		</dependency>
 
 
@@ -326,15 +322,5 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
-
 	</build>
-
-	<repositories>
-		<repository>
-			<id>jcenter</id>
-			<name>jcenter</name>
-			<url>https://jcenter.bintray.com</url>
-		</repository>
-	</repositories>
-
 </project>
