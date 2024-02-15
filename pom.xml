@@ -15,7 +15,7 @@
 		<javax.servlet-api.version>4.0.1</javax.servlet-api.version>
 		<jquery.version>3.1.1</jquery.version>
 		<bootstrap.version>4.3.1</bootstrap.version>
-		<rxjava.version>3.1.2</rxjava.version>
+		<rxjava.version>3.1.6</rxjava.version>
 
 		<!-- Template engine versions -->
 		<htmlflow.version>4.5</htmlflow.version>
@@ -41,6 +41,12 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webflux</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>io.reactivex.rxjava3</groupId>
+			<artifactId>rxjava</artifactId>
+			<version>${rxjava.version}</version>
 		</dependency>
 
 		<!-- Template engines -->
@@ -116,6 +122,11 @@
 			<artifactId>jmh-core-benchmarks</artifactId>
 			<version>${jmh.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.reactivestreams</groupId>
+			<artifactId>reactive-streams</artifactId>
+			<version>1.0.4</version>
+		</dependency>
 
 	</dependencies>
 
@@ -157,6 +168,7 @@
 				</dependencies>
 				<executions>
 					<execution>
+						<id>shade-my-jar</id>
 						<phase>package</phase>
 						<goals>
 							<goal>shade</goal>
