@@ -2,11 +2,11 @@ package com.jeroenreijn.examples.view
 
 import com.jeroenreijn.examples.model.Presentation
 import com.jeroenreijn.examples.view.appendable.AppendableSink
+import io.reactivex.rxjava3.core.Observable
 import kotlinx.html.*
 import kotlinx.html.stream.appendHTML
-import reactor.core.publisher.Flux
 
-fun kotlinXReactive(sink : AppendableSink, presentations : Flux<Presentation>) {
+fun kotlinXReactive(sink : AppendableSink, presentations : Observable<Presentation>) {
     sink
         .appendHTML()
         .html {
@@ -53,7 +53,7 @@ fun kotlinXReactive(sink : AppendableSink, presentations : Flux<Presentation>) {
         }
 }
 
-fun kotlinXSync(sink : Appendable, presentations : Flux<Presentation>) {
+fun kotlinXSync(sink : Appendable, presentations : Observable<Presentation>) {
     sink
         .appendHTML()
         .html {
@@ -88,7 +88,7 @@ fun kotlinXSync(sink : Appendable, presentations : Flux<Presentation>) {
                                 }
                             }
                         }
-                        .blockLast()
+                        .blockingLast()
                 }
 
                 script { src = "/webjars/jquery/3.1.1/jquery.min.js" }
