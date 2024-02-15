@@ -4,6 +4,8 @@ import com.jeroenreijn.examples.model.Presentation
 import com.jeroenreijn.examples.repository.PresentationRepo
 import com.jeroenreijn.examples.view.*
 import com.jeroenreijn.examples.view.appendable.AppendableSink
+import io.reactivex.rxjava3.core.BackpressureStrategy
+import io.reactivex.rxjava3.core.BackpressureStrategy.DROP
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -29,11 +31,11 @@ class PresentationsRoutes(repo : PresentationRepo) {
     /*
      * It executes the initial continuation of a coroutine in the current
      * call-frame and lets the coroutine resume in whatever thread.
-     * Better performance but not suitable for Sync because uses blocking IO.
+     * Better performance but not suitable for blocking IO, only for asynchronous usage.
      */
     private val unconf = CoroutineScope(Dispatchers.Unconfined)
-    private val presentationsFlux: Flux<Presentation> = repo.findAllReactive()
-    private val presentationsFlow: Flow<Presentation> = repo.findAllReactive().asFlow()
+    private val presentationsFlux = repo.findAllReactive()
+    private val presentationsFlow = repo.findAllReactive().toFlowable(DROP).asFlow()
 
     @Bean
     fun presentationsRouter() = router {
@@ -49,7 +51,7 @@ class PresentationsRoutes(repo : PresentationRepo) {
 
     private fun handleTemplateThymeleafSync(): Mono<ServerResponse> {
         val model = mapOf<String, Any>(
-            "reactivedata" to presentationsFlux
+            "reactivedata" to presentationsFlux.blockingIterable()
         )
         return ServerResponse
             .ok()
@@ -70,7 +72,11 @@ class PresentationsRoutes(repo : PresentationRepo) {
 
     private fun handleTemplateHtmlFlowSync() : Mono<ServerResponse> {
         val view = AppendableSink()
-        scope.launch { view.start { // We need another co-routine to render concurrently
+        /*
+         * We need another co-routine to render concurrently and ensure
+         * progressive server-side rendering (PSSR)
+         */
+        scope.launch { view.start {
             htmlFlowTemplateSync
                 .setOut(this)
                 .write(presentationsFlux)
@@ -97,7 +103,13 @@ class PresentationsRoutes(repo : PresentationRepo) {
 
     private fun handleTemplateHtmlFlowSuspending() : Mono<ServerResponse> {
         val view = AppendableSink()
-        unconf.launch { view.startSuspend { // We need another co-routine to render concurrently
+        /*
+         * We need another co-routine to render concurrently and ensure
+         * progressive server-side rendering (PSSR)
+         * Here we are using Unconfined running in same therad and avoiding context switching.
+         * That's ok since we are NOT blocking on htmlFlowTemplateSuspending.
+         */
+        unconf.launch { view.startSuspend {
             htmlFlowTemplateSuspending
                 .write(this, presentationsFlow)
             this.close()
@@ -111,6 +123,10 @@ class PresentationsRoutes(repo : PresentationRepo) {
 
     private fun handleTemplateKotlinXSync() : Mono<ServerResponse> {
         val view = AppendableSink()
+        /*
+         * We need another co-routine to render concurrently and ensure
+         * progressive server-side rendering (PSSR)
+         */
         scope.launch { view.startSuspend {
             kotlinXSync(this, presentationsFlux)
             this.close()

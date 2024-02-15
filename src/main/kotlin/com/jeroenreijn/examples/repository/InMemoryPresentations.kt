@@ -1,13 +1,13 @@
 package com.jeroenreijn.examples.repository
 
 import com.jeroenreijn.examples.model.Presentation
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.reactive.asFlow
+import io.reactivex.rxjava3.core.BackpressureStrategy
+import io.reactivex.rxjava3.core.Flowable
+import io.reactivex.rxjava3.core.Observable
+import org.reactivestreams.Publisher
 import org.springframework.stereotype.Repository
-import reactor.core.publisher.Flux
-import java.time.Duration
-import java.time.Duration.ofMillis
+import java.util.concurrent.TimeUnit
+
 
 @Repository
 class InMemoryPresentations : PresentationRepo {
@@ -17,12 +17,15 @@ class InMemoryPresentations : PresentationRepo {
     }
 
     private val presentationsList = mutableListOf<Presentation>()
-    private val presentationsReactive = Flux.fromIterable(presentationsList)
+    private val presentationsReactive = Observable
+        .fromIterable(presentationsList)
 
-    override fun findAllReactive(): Flux<Presentation> = if(timeout == 0L) {
+
+    override fun findAllReactive(): Observable<Presentation> = if(timeout == 0L) {
         presentationsReactive
     } else {
-        presentationsReactive.delayElements(ofMillis(timeout))
+        presentationsReactive
+            .concatMap { Observable.just(it).delay(timeout, TimeUnit.MILLISECONDS) }
     }
 
     init {
