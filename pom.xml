@@ -20,8 +20,7 @@
 		<!-- Template engine versions -->
 		<htmlflow.version>4.5</htmlflow.version>
 		<kotlin.version>1.9.22</kotlin.version>
-		<kotlinx.html.version>0.7.5</kotlinx.html.version>
-
+		<kotlinx.html.version>0.11.0</kotlinx.html.version>
 		<junit-jupiter.version>5.8.0</junit-jupiter.version>
 
 		<!-- Benchmark -->
@@ -44,34 +43,10 @@
 			<artifactId>spring-boot-starter-webflux</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>io.reactivex.rxjava3</groupId>
-			<artifactId>rxjava</artifactId>
-			<version>${rxjava.version}</version>
-		</dependency>
-
 		<!-- Template engines -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-thymeleaf</artifactId>
-		</dependency>
-
-
-		<dependency>
-			<groupId>org.ow2.asm</groupId>
-			<artifactId>asm-xml</artifactId>
-			<version>6.2.1</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.parboiled</groupId>
-			<artifactId>parboiled-java</artifactId>
-			<version>1.2.0</version>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-mustache</artifactId>
 		</dependency>
 
 		<dependency>
@@ -79,7 +54,6 @@
 			<artifactId>htmlflow</artifactId>
 			<version>${htmlflow.version}</version>
 		</dependency>
-
 
 		<dependency>
 			<groupId>org.jetbrains.kotlin</groupId>
