@@ -35,6 +35,7 @@ class OutputStreamSink : OutputStream(), Closeable {
 
     override fun close() {
         super.close()
+        bufferedWriter.flush()
         tryFlush()
         sink.emitComplete(Sinks.EmitFailureHandler.FAIL_FAST)
     }

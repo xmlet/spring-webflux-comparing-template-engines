@@ -9,7 +9,7 @@ import org.xmlet.htmlapifaster.*
 
 val htmlFlowTemplate: HtmlViewAsync<Observable<Presentation>> = HtmlFlow.viewAsync<Observable<Presentation>?> { view ->
     view
-        .html()
+        .html().attrLang("en-us")
         .head()
         .meta().attrCharset("UTF-8").`__`()
         .meta().attrName("viewport").attrContent("width=device-width, initial-scale=1.0").`__`()
@@ -20,8 +20,7 @@ val htmlFlowTemplate: HtmlViewAsync<Observable<Presentation>> = HtmlFlow.viewAsy
         .title().text("JFall 2013 Presentations - HtmlFlow").`__`()
         .link()
         .attrRel(EnumRelType.STYLESHEET)
-        .attrHref("/webjars/bootstrap/4.3.1/css/bootstrap.min.css")
-        .attrMedia(EnumMediaType.SCREEN)
+        .attrHref("/webjars/bootstrap/5.3.0/css/bootstrap.min.css")
         .`__`() // link
         .`__`() // head
         .body()
@@ -37,14 +36,12 @@ val htmlFlowTemplate: HtmlViewAsync<Observable<Presentation>> = HtmlFlow.viewAsy
                 .subscribe()
         } // foreach
         .`__`() // container
-        .script().attrSrc("/webjars/jquery/3.1.1/jquery.min.js").`__`()
-        .script().attrSrc("/webjars/bootstrap/4.3.1/js/bootstrap.min.js").`__`()
         .`__`() // body
         .`__`() // html
 }.threadSafe()
 
 val htmlFlowTemplateSuspending: HtmlViewSuspend<Flow<Presentation>> = viewSuspend<Flow<Presentation>> {
-        html()
+        html().attrLang("en-us")
         .head()
         .meta().attrCharset("UTF-8").`__`()
         .meta().attrName("viewport").attrContent("width=device-width, initial-scale=1.0").`__`()
@@ -55,8 +52,7 @@ val htmlFlowTemplateSuspending: HtmlViewSuspend<Flow<Presentation>> = viewSuspen
         .title().text("JFall 2013 Presentations - HtmlFlow").`__`()
         .link()
         .attrRel(EnumRelType.STYLESHEET)
-        .attrHref("/webjars/bootstrap/4.3.1/css/bootstrap.min.css")
-        .attrMedia(EnumMediaType.SCREEN)
+        .attrHref("/webjars/bootstrap/5.3.0/css/bootstrap.min.css")
         .`__`() // link
         .`__`() // head
         .body()
@@ -70,14 +66,12 @@ val htmlFlowTemplateSuspending: HtmlViewSuspend<Flow<Presentation>> = viewSuspen
             }
         } // foreach
         .`__`() // container
-        .script().attrSrc("/webjars/jquery/3.1.1/jquery.min.js").`__`()
-        .script().attrSrc("/webjars/bootstrap/4.3.1/js/bootstrap.min.js").`__`()
         .`__`() // body
         .`__`() // html
 }.threadSafe()
 
 val htmlFlowTemplateSync: HtmlView<Observable<Presentation>> = HtmlFlow.view<Observable<Presentation>> { view -> view
-    .html()
+    .html().attrLang("en-us")
     .head()
     .meta().attrCharset("UTF-8").`__`()
     .meta().attrName("viewport").attrContent("width=device-width, initial-scale=1.0").`__`()
@@ -88,8 +82,7 @@ val htmlFlowTemplateSync: HtmlView<Observable<Presentation>> = HtmlFlow.view<Obs
     .title().text("JFall 2013 Presentations - HtmlFlow").`__`()
     .link()
     .attrRel(EnumRelType.STYLESHEET)
-    .attrHref("/webjars/bootstrap/4.3.1/css/bootstrap.min.css")
-    .attrMedia(EnumMediaType.SCREEN)
+    .attrHref("/webjars/bootstrap/5.3.0/css/bootstrap.min.css")
     .`__`() // link
     .`__`() // head
     .body()
@@ -105,8 +98,6 @@ val htmlFlowTemplateSync: HtmlView<Observable<Presentation>> = HtmlFlow.view<Obs
             .blockingLast()
     } // foreach
     .`__`() // container
-    .script().attrSrc("/webjars/jquery/3.1.1/jquery.min.js").`__`()
-    .script().attrSrc("/webjars/bootstrap/4.3.1/js/bootstrap.min.js").`__`()
     .`__`() // body
     .`__`() // html
 }.threadSafe()
