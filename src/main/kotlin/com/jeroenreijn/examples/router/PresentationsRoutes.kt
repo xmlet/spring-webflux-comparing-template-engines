@@ -1,6 +1,7 @@
 package com.jeroenreijn.examples.router
 
 import com.fizzed.rocker.runtime.OutputStreamOutput
+import com.jeroenreijn.examples.model.Presentation
 import com.jeroenreijn.examples.repository.PresentationRepo
 import com.jeroenreijn.examples.view.*
 import com.jeroenreijn.examples.view.JStachioView.PresentationsModel
@@ -17,6 +18,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
+import org.apache.velocity.VelocityContext
+import org.apache.velocity.app.VelocityEngine
 import org.springframework.context.annotation.Bean
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.MediaType
@@ -25,15 +28,12 @@ import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.router
 import org.thymeleaf.spring6.context.webflux.ReactiveDataDriverContextVariable
 import org.trimou.engine.MustacheEngineBuilder
-import org.trimou.engine.config.EngineConfigurationKey
 import org.trimou.engine.config.EngineConfigurationKey.*
-import org.trimou.engine.locator.ClassPathTemplateLocator
 import org.trimou.engine.locator.ClassPathTemplateLocator.*
-import org.trimou.engine.resolver.CombinedIndexResolver
 import org.trimou.engine.resolver.CombinedIndexResolver.*
-import org.trimou.handlebars.HelpersBuilder
 import org.trimou.handlebars.HelpersBuilder.extra
 import reactor.core.publisher.Mono
+import java.util.*
 
 @Component
 class PresentationsRoutes(repo : PresentationRepo) {
@@ -65,14 +65,21 @@ class PresentationsRoutes(repo : PresentationRepo) {
             .setSuffix("trimou").build()
         )
         .registerHelpers(extra().build()).build().getMustache("presentations")
-
+    private val viewPresentationsVelocity = Properties().apply {
+        setProperty("resource.loader", "class")
+        setProperty(
+            "class.resource.loader.class",
+            "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader"
+        )
+    }.let { VelocityEngine(it).getTemplate("templates/velocity/presentations-velocity.vm", "UTF-8") }
     /**
      * Data models
      */
     private val presentationsFlux = repo.findAllReactive()
     private val presentationsIter = presentationsFlux.blockingIterable()
     private val presentationsModelJStachio: PresentationsModel = PresentationsModel(presentationsIter)
-    private val presentationsModelMap = mapOf("presentations" to presentationsIter)
+    private val presentationsModelMap: Map<String, Any> = mutableMapOf("presentations" to presentationsIter) // Velocity requires it Mutable
+    private val presentationsModelVelocity = VelocityContext(presentationsModelMap)
     private val presentationsFlow = repo.findAllReactive().toFlowable(DROP).asFlow()
 
     @Bean
@@ -86,6 +93,7 @@ class PresentationsRoutes(repo : PresentationRepo) {
         GET("/pebble/sync") { handleTemplatePebbleSync() }
         GET("/freemarker/sync") { handleTemplateFreemarkerSync() }
         GET("/trimou/sync") { handleTemplateTrimouSync() }
+        GET("/velocity/sync") { handleTemplateVelocitySync() }
         GET("/thymeleaf/sync") { handleTemplateThymeleafSync() }
         GET("/htmlFlow/sync") { handleTemplateHtmlFlowSync() }
         GET("/kotlinx/sync") { handleTemplateKotlinXSync() }
@@ -142,6 +150,17 @@ class PresentationsRoutes(repo : PresentationRepo) {
     private fun handleTemplateTrimouSync(): Mono<ServerResponse> {
         val out = AppendableSink().also { scope.launch {
             viewPresentationsTrimou.render(it, presentationsModelMap)
+            it.close()
+        }}
+        return ServerResponse
+            .ok()
+            .contentType(MediaType.TEXT_HTML)
+            .body(out.asFlux(), object : ParameterizedTypeReference<String>() {})
+    }
+
+    private fun handleTemplateVelocitySync(): Mono<ServerResponse> {
+        val out = WriterSink().also { scope.launch {
+            viewPresentationsVelocity.merge(presentationsModelVelocity, it)
             it.close()
         }}
         return ServerResponse
