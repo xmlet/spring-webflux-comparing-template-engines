@@ -26,13 +26,14 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.SECONDS)
 @Fork(value = 1)
 @State(Scope.Benchmark)
-// java -jar target/template-engines.jar -i 4 -wi 4 -f 1 -r 2 -w 2 -p route=/thymeleaf,/htmlFlow,/kotlinx
+// java -jar target/template-engines.jar -i 4 -wi 4 -f 1 -r 2 -w 2 -t 8 -p route=/rocker/sync,/thymeleaf,/htmlFlow,/kotlinx
 //
 //-i 4 iterations
 //-wi 4 warmup iterations
 //-f 1 fork
 //-r 2 run each iteration for 2 seconds
 //-w 2 run each warmup iteration for 2 seconds.
+//-t 8 worker threads
 public class LaunchJMH {
     
     static ConfigurableApplicationContext context;

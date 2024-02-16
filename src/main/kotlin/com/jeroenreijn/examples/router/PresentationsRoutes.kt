@@ -6,11 +6,9 @@ import com.jeroenreijn.examples.repository.PresentationRepo
 import com.jeroenreijn.examples.view.*
 import com.jeroenreijn.examples.view.appendable.AppendableSink
 import com.jeroenreijn.examples.view.appendable.OutputStreamSink
-import io.reactivex.rxjava3.core.BackpressureStrategy
 import io.reactivex.rxjava3.core.BackpressureStrategy.DROP
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
 import org.springframework.context.annotation.Bean
@@ -20,7 +18,6 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.router
 import org.thymeleaf.spring6.context.webflux.ReactiveDataDriverContextVariable
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 
 @Component
@@ -66,7 +63,7 @@ class PresentationsRoutes(repo : PresentationRepo) {
         return ServerResponse
             .ok()
             .contentType(MediaType.TEXT_HTML)
-            .body(out.toFlux(), object : ParameterizedTypeReference<String>() {})
+            .body(out.asFlux(), object : ParameterizedTypeReference<String>() {})
     }
 
     private fun handleTemplateThymeleafSync(): Mono<ServerResponse> {
@@ -89,18 +86,16 @@ class PresentationsRoutes(repo : PresentationRepo) {
             .render("index-thymeleaf", model);
     }
 
-
     private fun handleTemplateHtmlFlowSync() : Mono<ServerResponse> {
-        val view = AppendableSink()
         /*
          * We need another co-routine to render concurrently and ensure
          * progressive server-side rendering (PSSR)
          */
-        scope.launch { view.start {
+        val view = AppendableSink().also { scope.launch {
             htmlFlowTemplateSync
-                .setOut(this)
+                .setOut(it)
                 .write(presentationsFlux)
-            this.close()
+            it.close()
         }}
         return ServerResponse
             .ok()
@@ -110,10 +105,10 @@ class PresentationsRoutes(repo : PresentationRepo) {
 
 
     private fun handleTemplateHtmlFlowFromFlux() : Mono<ServerResponse> {
-        val view = AppendableSink().start {
+        val view = AppendableSink().also { sink ->
             htmlFlowTemplate
-                .writeAsync(this, presentationsFlux)
-                .thenAccept {this.close()}
+                .writeAsync(sink, presentationsFlux)
+                .thenAccept {sink.close()}
         }
         return ServerResponse
             .ok()
@@ -122,17 +117,16 @@ class PresentationsRoutes(repo : PresentationRepo) {
     }
 
     private fun handleTemplateHtmlFlowSuspending() : Mono<ServerResponse> {
-        val view = AppendableSink()
         /*
          * We need another co-routine to render concurrently and ensure
          * progressive server-side rendering (PSSR)
          * Here we are using Unconfined running in same therad and avoiding context switching.
          * That's ok since we are NOT blocking on htmlFlowTemplateSuspending.
          */
-        unconf.launch { view.startSuspend {
+        val view = AppendableSink().also { unconf.launch {
             htmlFlowTemplateSuspending
-                .write(this, presentationsFlow)
-            this.close()
+                .write(it, presentationsFlow)
+            it.close()
         }}
         return ServerResponse
             .ok()
@@ -142,14 +136,13 @@ class PresentationsRoutes(repo : PresentationRepo) {
 
 
     private fun handleTemplateKotlinXSync() : Mono<ServerResponse> {
-        val view = AppendableSink()
         /*
          * We need another co-routine to render concurrently and ensure
          * progressive server-side rendering (PSSR)
          */
-        scope.launch { view.startSuspend {
-            kotlinXSync(this, presentationsFlux)
-            this.close()
+        val view = AppendableSink().also { scope.launch {
+            kotlinXSync(it, presentationsFlux)
+            it.close()
         }}
         return ServerResponse
             .ok()
@@ -158,8 +151,8 @@ class PresentationsRoutes(repo : PresentationRepo) {
     }
 
     private fun handleTemplateKotlinX() : Mono<ServerResponse> {
-        val view = AppendableSink().start {
-            kotlinXReactive(this, presentationsFlux)
+        val view = AppendableSink().also {
+            kotlinXReactive(it, presentationsFlux)
         }
         return ServerResponse
             .ok()
