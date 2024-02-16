@@ -39,6 +39,7 @@ public class LaunchJMH {
     static WebTestClient webTestClient;
 
     @Param({
+            "/rocker/sync",
             "/thymeleaf/sync",
             "/htmlFlow/sync",
             "/kotlinx/sync",

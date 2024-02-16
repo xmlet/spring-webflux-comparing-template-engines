@@ -1,9 +1,11 @@
 package com.jeroenreijn.examples.router
 
+import com.fizzed.rocker.runtime.OutputStreamOutput
 import com.jeroenreijn.examples.model.Presentation
 import com.jeroenreijn.examples.repository.PresentationRepo
 import com.jeroenreijn.examples.view.*
 import com.jeroenreijn.examples.view.appendable.AppendableSink
+import com.jeroenreijn.examples.view.appendable.OutputStreamSink
 import io.reactivex.rxjava3.core.BackpressureStrategy
 import io.reactivex.rxjava3.core.BackpressureStrategy.DROP
 import kotlinx.coroutines.CoroutineScope
@@ -43,15 +45,33 @@ class PresentationsRoutes(repo : PresentationRepo) {
         GET("/htmlFlow") { handleTemplateHtmlFlowFromFlux() }
         GET("/htmlFlow/suspending") { handleTemplateHtmlFlowSuspending() }
         GET("/kotlinx") { handleTemplateKotlinX() }
+        GET("/rocker/sync") { handleTemplateRockerSync() }
         GET("/thymeleaf/sync") { handleTemplateThymeleafSync() }
         GET("/htmlFlow/sync") { handleTemplateHtmlFlowSync() }
         GET("/kotlinx/sync") { handleTemplateKotlinXSync() }
     }
 
 
+    private fun handleTemplateRockerSync(): Mono<ServerResponse> {
+        val model: MutableIterable<Presentation> = presentationsFlux.blockingIterable();
+        val out = OutputStreamSink()
+        scope.launch {
+            templates
+                .rocker
+                .presentations
+                .template(model)
+                .render { contentType, charset -> OutputStreamOutput(contentType, out, charset) }
+            out.close()
+        }
+        return ServerResponse
+            .ok()
+            .contentType(MediaType.TEXT_HTML)
+            .body(out.toFlux(), object : ParameterizedTypeReference<String>() {})
+    }
+
     private fun handleTemplateThymeleafSync(): Mono<ServerResponse> {
         val model = mapOf<String, Any>(
-            "reactivedata" to presentationsFlux.blockingIterable()
+            "presentations" to presentationsFlux.blockingIterable()
         )
         return ServerResponse
             .ok()
@@ -61,7 +81,7 @@ class PresentationsRoutes(repo : PresentationRepo) {
 
     private fun handleTemplateThymeleaf(): Mono<ServerResponse> {
         val model = mapOf<String, Any>(
-            "reactivedata" to ReactiveDataDriverContextVariable(presentationsFlux, 1)
+            "presentations" to ReactiveDataDriverContextVariable(presentationsFlux, 1)
         )
         return ServerResponse
             .ok()

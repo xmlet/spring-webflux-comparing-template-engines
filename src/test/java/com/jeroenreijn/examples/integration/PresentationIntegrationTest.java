@@ -12,6 +12,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
+import static java.lang.System.lineSeparator;
 import static java.util.Arrays.*;
 import static java.util.stream.Collectors.joining;
 import static org.assertj.core.api.BDDAssertions.then;
@@ -21,13 +22,13 @@ class PresentationIntegrationTest {
 
     private static String THYMELEAF_FORMED_HTML_ASSERTION() { return """
             <!DOCTYPE html>
-            <html>
+            <html lang="en-us">
             <head>
                 <meta charset="UTF-8"/>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
                 <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
                 <title>JFall 2013 Presentations - Thymeleaf</title>
-                <link rel="stylesheet" href="/webjars/bootstrap/4.3.1/css/bootstrap.min.css"/>
+                <link rel="stylesheet" href="/webjars/bootstrap/5.3.0/css/bootstrap.min.css"/>
             </head>
             <body>
             	<div class="container">
@@ -86,24 +87,19 @@ class PresentationIntegrationTest {
                         <div class="card-body">Understanding data is increasingly important to create cutting-edge applications. A whole new data science field is emerging, with the open source R language as a leading technology. This statistical programming language is specifically designed for analyzing and understanding data.<br/><br/>In this session we approach R from the perspective of Java developers. How do you get up to speed quickly, what are the pitfalls to look out for?  Also we discuss how to bridge the divide between the R language and the JVM. After this session you can use your new skills to explore an exciting world of data analytics and machine learning! </div>
                     </div>
                 </div>
-               \s
-                <script src="/webjars/jquery/3.1.1/jquery.min.js"></script>
-                <script src="/webjars/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-                        
-               \s
             </body>
             </html>
             """;
     }
     private static String THYMELEAF_FORMED_HTML_ASSERTION_SYNC() { return """
             <!DOCTYPE html>
-            <html>
+            <html lang="en-us">
             <head>
                 <meta charset="UTF-8"/>
                 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
                 <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
                 <title>JFall 2013 Presentations - Thymeleaf</title>
-                <link rel="stylesheet" href="/webjars/bootstrap/4.3.1/css/bootstrap.min.css"/>
+                <link rel="stylesheet" href="/webjars/bootstrap/5.3.0/css/bootstrap.min.css"/>
             </head>
             <body>
             	<div class="container">
@@ -171,11 +167,6 @@ class PresentationIntegrationTest {
                         <div class="card-body">Understanding data is increasingly important to create cutting-edge applications. A whole new data science field is emerging, with the open source R language as a leading technology. This statistical programming language is specifically designed for analyzing and understanding data.<br/><br/>In this session we approach R from the perspective of Java developers. How do you get up to speed quickly, what are the pitfalls to look out for?  Also we discuss how to bridge the divide between the R language and the JVM. After this session you can use your new skills to explore an exciting world of data analytics and machine learning! </div>
                     </div>
                 </div>
-               \s
-                <script src="/webjars/jquery/3.1.1/jquery.min.js"></script>
-                <script src="/webjars/bootstrap/4.3.1/js/bootstrap.min.js"></script>
-                        
-               \s
             </body>
             </html>
             """;
@@ -484,6 +475,7 @@ class PresentationIntegrationTest {
         jmh.route = r.route;
         final String response = jmh.benchmarkTemplate();
 
+
         then(trimLines(response))
                 .isNotNull()
                 .isNotBlank()
@@ -492,8 +484,12 @@ class PresentationIntegrationTest {
 
     private static String trimLines(String lines) {
         final String nl = System.lineSeparator();
-        return stream(lines.split(nl))
-                .map(line -> line.trim())
+        return stream(lines
+                .replace("<", lineSeparator() + "<")
+                .replace(">", ">" + lineSeparator())
+                .split(nl))
+                .map(line -> line.trim().toLowerCase())
+                .filter(line -> !line.isEmpty())
                 .collect(joining(nl));
     }
 
@@ -515,22 +511,24 @@ class PresentationIntegrationTest {
                 /**
                  * Synchronous blocking routes
                  */
-                Arguments.of(Named.of("Generate html for Thymeleaf Sync",
+                Arguments.of(Named.of("Rocker Sync",
+                        new RouteAndExpected("/rocker/sync", THYMELEAF_FORMED_HTML_ASSERTION_SYNC()))),
+                Arguments.of(Named.of("Thymeleaf Sync",
                         new RouteAndExpected("/thymeleaf/sync", THYMELEAF_FORMED_HTML_ASSERTION_SYNC()))),
-                Arguments.of(Named.of("Generate html for HtmlFlow Sync",
+                Arguments.of(Named.of("HtmlFlow Sync",
                         new RouteAndExpected("/htmlFlow/sync", HTML_FLOW_HTML_ASSERTION()))),
-                Arguments.of(Named.of("Generate html for KotlinX Sync",
+                Arguments.of(Named.of("KotlinX Sync",
                         new RouteAndExpected("/kotlinx/sync", KOTLINX_HTML_ASSERTION()))),
                 /**
                  * Functional router with coroutines
                  */
-                Arguments.of(Named.of("Generate html for Thymeleaf Functional Router",
+                Arguments.of(Named.of("Thymeleaf from Flux",
                         new RouteAndExpected("/thymeleaf", THYMELEAF_FORMED_HTML_ASSERTION()))),
-                Arguments.of(Named.of("Generate html for HtmlFlow from Flux",
+                Arguments.of(Named.of("HtmlFlow from Flux",
                         new RouteAndExpected("/htmlFlow", HTML_FLOW_HTML_ASSERTION()))),
-                Arguments.of(Named.of("Generate html for HtmlFlow from Suspending",
+                Arguments.of(Named.of("HtmlFlow from Suspending",
                         new RouteAndExpected("/htmlFlow/suspending", HTML_FLOW_HTML_ASSERTION()))),
-                Arguments.of(Named.of("Generate html for KotlinX Functional Router",
+                Arguments.of(Named.of("KotlinX Functional Router",
                         new RouteAndExpected("/kotlinx", KOTLINX_HTML_ASSERTION_MALFORMED())))
         );
     }
