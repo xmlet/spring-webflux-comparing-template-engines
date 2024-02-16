@@ -1,9 +1,9 @@
 package com.jeroenreijn.examples.router
 
 import com.fizzed.rocker.runtime.OutputStreamOutput
-import com.jeroenreijn.examples.model.Presentation
 import com.jeroenreijn.examples.repository.PresentationRepo
 import com.jeroenreijn.examples.view.*
+import com.jeroenreijn.examples.view.JStachioView.PresentationsModel
 import com.jeroenreijn.examples.view.appendable.AppendableSink
 import com.jeroenreijn.examples.view.appendable.OutputStreamSink
 import io.reactivex.rxjava3.core.BackpressureStrategy.DROP
@@ -34,6 +34,8 @@ class PresentationsRoutes(repo : PresentationRepo) {
      */
     private val unconf = CoroutineScope(Dispatchers.Unconfined)
     private val presentationsFlux = repo.findAllReactive()
+    private val presentationsIter = presentationsFlux.blockingIterable()
+    private val presentationsModel: PresentationsModel = PresentationsModel(presentationsIter)
     private val presentationsFlow = repo.findAllReactive().toFlowable(DROP).asFlow()
 
     @Bean
@@ -43,23 +45,32 @@ class PresentationsRoutes(repo : PresentationRepo) {
         GET("/htmlFlow/suspending") { handleTemplateHtmlFlowSuspending() }
         GET("/kotlinx") { handleTemplateKotlinX() }
         GET("/rocker/sync") { handleTemplateRockerSync() }
+        GET("/jstachio/sync") { handleTemplateJStachioSync() }
         GET("/thymeleaf/sync") { handleTemplateThymeleafSync() }
         GET("/htmlFlow/sync") { handleTemplateHtmlFlowSync() }
         GET("/kotlinx/sync") { handleTemplateKotlinXSync() }
     }
 
-
     private fun handleTemplateRockerSync(): Mono<ServerResponse> {
-        val model: MutableIterable<Presentation> = presentationsFlux.blockingIterable();
-        val out = OutputStreamSink()
-        scope.launch {
+        val out = OutputStreamSink().also { scope.launch {
             templates
                 .rocker
                 .presentations
-                .template(model)
-                .render { contentType, charset -> OutputStreamOutput(contentType, out, charset) }
-            out.close()
-        }
+                .template(presentationsIter)
+                .render { contentType, charset -> OutputStreamOutput(contentType, it, charset) }
+            it.close()
+        }}
+        return ServerResponse
+            .ok()
+            .contentType(MediaType.TEXT_HTML)
+            .body(out.asFlux(), object : ParameterizedTypeReference<String>() {})
+    }
+
+    private fun handleTemplateJStachioSync(): Mono<ServerResponse> {
+        val out = OutputStreamSink().also { scope.launch {
+            JStachioView.presentationsWrite(presentationsModel, it)
+            it.close()
+        }}
         return ServerResponse
             .ok()
             .contentType(MediaType.TEXT_HTML)
@@ -68,7 +79,7 @@ class PresentationsRoutes(repo : PresentationRepo) {
 
     private fun handleTemplateThymeleafSync(): Mono<ServerResponse> {
         val model = mapOf<String, Any>(
-            "presentations" to presentationsFlux.blockingIterable()
+            "presentations" to presentationsIter
         )
         return ServerResponse
             .ok()
