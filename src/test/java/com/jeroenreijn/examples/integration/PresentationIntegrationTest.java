@@ -80,6 +80,8 @@ class PresentationIntegrationTest {
                         new RouteAndExpected("/pebble/sync", WELL_FORMED_HTML_ASSERTION()))),
                 Arguments.of(Named.of("Freemarker Sync",
                         new RouteAndExpected("/freemarker/sync", WELL_FORMED_HTML_ASSERTION()))),
+                Arguments.of(Named.of("Trimou Sync",
+                        new RouteAndExpected("/trimou/sync", WELL_FORMED_HTML_ASSERTION()))),
                 Arguments.of(Named.of("Thymeleaf Sync",
                         new RouteAndExpected("/thymeleaf/sync", WELL_FORMED_HTML_ASSERTION()))),
                 Arguments.of(Named.of("HtmlFlow Sync",

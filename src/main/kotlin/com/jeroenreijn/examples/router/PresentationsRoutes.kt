@@ -24,6 +24,15 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.router
 import org.thymeleaf.spring6.context.webflux.ReactiveDataDriverContextVariable
+import org.trimou.engine.MustacheEngineBuilder
+import org.trimou.engine.config.EngineConfigurationKey
+import org.trimou.engine.config.EngineConfigurationKey.*
+import org.trimou.engine.locator.ClassPathTemplateLocator
+import org.trimou.engine.locator.ClassPathTemplateLocator.*
+import org.trimou.engine.resolver.CombinedIndexResolver
+import org.trimou.engine.resolver.CombinedIndexResolver.*
+import org.trimou.handlebars.HelpersBuilder
+import org.trimou.handlebars.HelpersBuilder.extra
 import reactor.core.publisher.Mono
 
 @Component
@@ -43,6 +52,20 @@ class PresentationsRoutes(repo : PresentationRepo) {
      */
     private val enginePebble: PebbleEngine = PebbleEngine.Builder().autoEscaping(false).build()
     private val viewPresentationsPebble: PebbleTemplate = enginePebble.getTemplate("templates/pebble/presentations.pebble.html")
+    private val viewPresentationsFreemarker: Template = Configuration(Configuration.VERSION_2_3_32).run {
+        templateLoader = ClassTemplateLoader(javaClass, "/")
+        getTemplate("templates/freemarker/index-freemarker.ftl")
+    }
+    private val viewPresentationsTrimou = MustacheEngineBuilder.newBuilder() // Disable HTML escaping
+        .setProperty(SKIP_VALUE_ESCAPING, true) // Disable useless resolver
+        .setProperty(ENABLED_KEY, false)
+        .addTemplateLocator(builder(1)
+            .setRootPath("templates/trimou")
+            .setScanClasspath(false)
+            .setSuffix("trimou").build()
+        )
+        .registerHelpers(extra().build()).build().getMustache("presentations")
+
     /**
      * Data models
      */
@@ -62,6 +85,7 @@ class PresentationsRoutes(repo : PresentationRepo) {
         GET("/jstachio/sync") { handleTemplateJStachioSync() }
         GET("/pebble/sync") { handleTemplatePebbleSync() }
         GET("/freemarker/sync") { handleTemplateFreemarkerSync() }
+        GET("/trimou/sync") { handleTemplateTrimouSync() }
         GET("/thymeleaf/sync") { handleTemplateThymeleafSync() }
         GET("/htmlFlow/sync") { handleTemplateHtmlFlowSync() }
         GET("/kotlinx/sync") { handleTemplateKotlinXSync() }
@@ -105,13 +129,19 @@ class PresentationsRoutes(repo : PresentationRepo) {
     }
 
     private fun handleTemplateFreemarkerSync(): Mono<ServerResponse> {
-        val viewFreemarker: Template = Configuration(Configuration.VERSION_2_3_32).run {
-            templateLoader = ClassTemplateLoader(javaClass, "/")
-            getTemplate("templates/freemarker/index-freemarker.ftl")
-        }
-
         val out = WriterSink().also { scope.launch {
-            viewFreemarker.process(presentationsModelMap, it)
+            viewPresentationsFreemarker.process(presentationsModelMap, it)
+            it.close()
+        }}
+        return ServerResponse
+            .ok()
+            .contentType(MediaType.TEXT_HTML)
+            .body(out.asFlux(), object : ParameterizedTypeReference<String>() {})
+    }
+
+    private fun handleTemplateTrimouSync(): Mono<ServerResponse> {
+        val out = AppendableSink().also { scope.launch {
+            viewPresentationsTrimou.render(it, presentationsModelMap)
             it.close()
         }}
         return ServerResponse
