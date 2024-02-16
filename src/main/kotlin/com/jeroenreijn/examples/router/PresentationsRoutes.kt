@@ -7,6 +7,9 @@ import com.jeroenreijn.examples.view.JStachioView.PresentationsModel
 import com.jeroenreijn.examples.view.appendable.AppendableSink
 import com.jeroenreijn.examples.view.appendable.OutputStreamSink
 import com.jeroenreijn.examples.view.appendable.WriterSink
+import freemarker.cache.ClassTemplateLoader
+import freemarker.template.Configuration
+import freemarker.template.Template
 import io.pebbletemplates.pebble.PebbleEngine
 import io.pebbletemplates.pebble.template.PebbleTemplate
 import io.reactivex.rxjava3.core.BackpressureStrategy.DROP
@@ -46,7 +49,7 @@ class PresentationsRoutes(repo : PresentationRepo) {
     private val presentationsFlux = repo.findAllReactive()
     private val presentationsIter = presentationsFlux.blockingIterable()
     private val presentationsModelJStachio: PresentationsModel = PresentationsModel(presentationsIter)
-    private val presentationsModelPebble = mapOf("presentations" to presentationsIter)
+    private val presentationsModelMap = mapOf("presentations" to presentationsIter)
     private val presentationsFlow = repo.findAllReactive().toFlowable(DROP).asFlow()
 
     @Bean
@@ -58,6 +61,7 @@ class PresentationsRoutes(repo : PresentationRepo) {
         GET("/rocker/sync") { handleTemplateRockerSync() }
         GET("/jstachio/sync") { handleTemplateJStachioSync() }
         GET("/pebble/sync") { handleTemplatePebbleSync() }
+        GET("/freemarker/sync") { handleTemplateFreemarkerSync() }
         GET("/thymeleaf/sync") { handleTemplateThymeleafSync() }
         GET("/htmlFlow/sync") { handleTemplateHtmlFlowSync() }
         GET("/kotlinx/sync") { handleTemplateKotlinXSync() }
@@ -91,7 +95,23 @@ class PresentationsRoutes(repo : PresentationRepo) {
 
     private fun handleTemplatePebbleSync(): Mono<ServerResponse> {
         val out = WriterSink().also { scope.launch {
-            viewPresentationsPebble.evaluate(it, presentationsModelPebble)
+            viewPresentationsPebble.evaluate(it, presentationsModelMap)
+            it.close()
+        }}
+        return ServerResponse
+            .ok()
+            .contentType(MediaType.TEXT_HTML)
+            .body(out.asFlux(), object : ParameterizedTypeReference<String>() {})
+    }
+
+    private fun handleTemplateFreemarkerSync(): Mono<ServerResponse> {
+        val viewFreemarker: Template = Configuration(Configuration.VERSION_2_3_32).run {
+            templateLoader = ClassTemplateLoader(javaClass, "/")
+            getTemplate("templates/freemarker/index-freemarker.ftl")
+        }
+
+        val out = WriterSink().also { scope.launch {
+            viewFreemarker.process(presentationsModelMap, it)
             it.close()
         }}
         return ServerResponse
