@@ -76,6 +76,8 @@ class PresentationIntegrationTest {
                         new RouteAndExpected("/rocker/sync", WELL_FORMED_HTML_ASSERTION()))),
                 Arguments.of(Named.of("JStachio Sync",
                         new RouteAndExpected("/jstachio/sync", WELL_FORMED_HTML_ASSERTION()))),
+                Arguments.of(Named.of("Pebble Sync",
+                        new RouteAndExpected("/pebble/sync", WELL_FORMED_HTML_ASSERTION()))),
                 Arguments.of(Named.of("Thymeleaf Sync",
                         new RouteAndExpected("/thymeleaf/sync", WELL_FORMED_HTML_ASSERTION()))),
                 Arguments.of(Named.of("HtmlFlow Sync",

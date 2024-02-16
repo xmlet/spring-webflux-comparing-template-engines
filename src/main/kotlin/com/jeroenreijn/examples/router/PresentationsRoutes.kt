@@ -6,6 +6,9 @@ import com.jeroenreijn.examples.view.*
 import com.jeroenreijn.examples.view.JStachioView.PresentationsModel
 import com.jeroenreijn.examples.view.appendable.AppendableSink
 import com.jeroenreijn.examples.view.appendable.OutputStreamSink
+import com.jeroenreijn.examples.view.appendable.WriterSink
+import io.pebbletemplates.pebble.PebbleEngine
+import io.pebbletemplates.pebble.template.PebbleTemplate
 import io.reactivex.rxjava3.core.BackpressureStrategy.DROP
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -22,20 +25,28 @@ import reactor.core.publisher.Mono
 
 @Component
 class PresentationsRoutes(repo : PresentationRepo) {
-
-    /*
+    /**
      * We are using next one for synchronous blocking render.
      */
     private val scope = CoroutineScope(Dispatchers.Default)
-    /*
+    /**
      * It executes the initial continuation of a coroutine in the current
      * call-frame and lets the coroutine resume in whatever thread.
      * Better performance but not suitable for blocking IO, only for asynchronous usage.
      */
     private val unconf = CoroutineScope(Dispatchers.Unconfined)
+    /**
+     * Views
+     */
+    private val enginePebble: PebbleEngine = PebbleEngine.Builder().autoEscaping(false).build()
+    private val viewPresentationsPebble: PebbleTemplate = enginePebble.getTemplate("templates/pebble/presentations.pebble.html")
+    /**
+     * Data models
+     */
     private val presentationsFlux = repo.findAllReactive()
     private val presentationsIter = presentationsFlux.blockingIterable()
-    private val presentationsModel: PresentationsModel = PresentationsModel(presentationsIter)
+    private val presentationsModelJStachio: PresentationsModel = PresentationsModel(presentationsIter)
+    private val presentationsModelPebble = mapOf("presentations" to presentationsIter)
     private val presentationsFlow = repo.findAllReactive().toFlowable(DROP).asFlow()
 
     @Bean
@@ -46,6 +57,7 @@ class PresentationsRoutes(repo : PresentationRepo) {
         GET("/kotlinx") { handleTemplateKotlinX() }
         GET("/rocker/sync") { handleTemplateRockerSync() }
         GET("/jstachio/sync") { handleTemplateJStachioSync() }
+        GET("/pebble/sync") { handleTemplatePebbleSync() }
         GET("/thymeleaf/sync") { handleTemplateThymeleafSync() }
         GET("/htmlFlow/sync") { handleTemplateHtmlFlowSync() }
         GET("/kotlinx/sync") { handleTemplateKotlinXSync() }
@@ -68,7 +80,18 @@ class PresentationsRoutes(repo : PresentationRepo) {
 
     private fun handleTemplateJStachioSync(): Mono<ServerResponse> {
         val out = OutputStreamSink().also { scope.launch {
-            JStachioView.presentationsWrite(presentationsModel, it)
+            JStachioView.presentationsWrite(presentationsModelJStachio, it)
+            it.close()
+        }}
+        return ServerResponse
+            .ok()
+            .contentType(MediaType.TEXT_HTML)
+            .body(out.asFlux(), object : ParameterizedTypeReference<String>() {})
+    }
+
+    private fun handleTemplatePebbleSync(): Mono<ServerResponse> {
+        val out = WriterSink().also { scope.launch {
+            viewPresentationsPebble.evaluate(it, presentationsModelPebble)
             it.close()
         }}
         return ServerResponse
