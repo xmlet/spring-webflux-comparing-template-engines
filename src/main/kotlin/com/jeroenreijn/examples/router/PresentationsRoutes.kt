@@ -1,7 +1,6 @@
 package com.jeroenreijn.examples.router
 
 import com.fizzed.rocker.runtime.OutputStreamOutput
-import com.jeroenreijn.examples.model.Presentation
 import com.jeroenreijn.examples.repository.PresentationRepo
 import com.jeroenreijn.examples.view.*
 import com.jeroenreijn.examples.view.JStachioView.PresentationsModel
@@ -20,31 +19,37 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
 import org.apache.velocity.VelocityContext
 import org.apache.velocity.app.VelocityEngine
+import org.springframework.context.ApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.router
+import org.thymeleaf.TemplateEngine
+import org.thymeleaf.context.Context
 import org.thymeleaf.spring6.context.webflux.ReactiveDataDriverContextVariable
 import org.trimou.engine.MustacheEngineBuilder
-import org.trimou.engine.config.EngineConfigurationKey.*
-import org.trimou.engine.locator.ClassPathTemplateLocator.*
-import org.trimou.engine.resolver.CombinedIndexResolver.*
+import org.trimou.engine.config.EngineConfigurationKey.SKIP_VALUE_ESCAPING
+import org.trimou.engine.locator.ClassPathTemplateLocator.builder
+import org.trimou.engine.resolver.CombinedIndexResolver.ENABLED_KEY
 import org.trimou.handlebars.HelpersBuilder.extra
 import reactor.core.publisher.Mono
 import java.util.*
 
 @Component
-class PresentationsRoutes(repo : PresentationRepo) {
+class PresentationsRoutes(repo : PresentationRepo, context: ApplicationContext) {
     /**
      * We are using next one for synchronous blocking render.
+     * We need to release calling thread to proceed request handling and return Publisher<String> with HTML.
+     * Using Dispatchers.Unconfined on Blocking IO will prevent Progressive Rendering.
      */
     private val scope = CoroutineScope(Dispatchers.Default)
     /**
      * It executes the initial continuation of a coroutine in the current
      * call-frame and lets the coroutine resume in whatever thread.
-     * Better performance but not suitable for blocking IO, only for asynchronous usage.
+     * Better performance but not suitable for blocking IO, only for NIO.
+     * NIO will release threads to perform other task.
      */
     private val unconf = CoroutineScope(Dispatchers.Unconfined)
     /**
@@ -72,14 +77,21 @@ class PresentationsRoutes(repo : PresentationRepo) {
             "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader"
         )
     }.let { VelocityEngine(it).getTemplate("templates/velocity/presentations-velocity.vm", "UTF-8") }
+    private val viewThymeleaf: TemplateEngine = context.getBean(TemplateEngine::class.java)
+
     /**
      * Data models
      */
     private val presentationsFlux = repo.findAllReactive()
     private val presentationsIter = presentationsFlux.blockingIterable()
     private val presentationsModelJStachio: PresentationsModel = PresentationsModel(presentationsIter)
-    private val presentationsModelMap: Map<String, Any> = mutableMapOf("presentations" to presentationsIter) // Velocity requires it Mutable
+    private val presentationsModelMap: Map<String, Any> =
+        mutableMapOf("presentations" to presentationsIter) // Velocity requires it Mutable
     private val presentationsModelVelocity = VelocityContext(presentationsModelMap)
+    private val presentationsModelThymeleaf =
+        Context().apply { setVariable("presentations", presentationsIter) }
+    private val presentationModelThymeleafRx =
+        mapOf<String, Any>("presentations" to ReactiveDataDriverContextVariable(presentationsFlux, 1))
     private val presentationsFlow = repo.findAllReactive().toFlowable(DROP).asFlow()
 
     @Bean
@@ -170,23 +182,22 @@ class PresentationsRoutes(repo : PresentationRepo) {
     }
 
     private fun handleTemplateThymeleafSync(): Mono<ServerResponse> {
-        val model = mapOf<String, Any>(
-            "presentations" to presentationsIter
-        )
+        val out = WriterSink().also { scope.launch {
+            viewThymeleaf.process("index-thymeleaf", presentationsModelThymeleaf, it)
+            it.close()
+        }}
+
         return ServerResponse
             .ok()
             .contentType(MediaType.TEXT_HTML)
-            .render("index-thymeleaf", model);
+            .body(out.asFlux(), object : ParameterizedTypeReference<String>() {})
     }
 
     private fun handleTemplateThymeleaf(): Mono<ServerResponse> {
-        val model = mapOf<String, Any>(
-            "presentations" to ReactiveDataDriverContextVariable(presentationsFlux, 1)
-        )
         return ServerResponse
             .ok()
             .contentType(MediaType.TEXT_HTML)
-            .render("index-thymeleaf", model);
+            .render("index-thymeleaf", presentationModelThymeleafRx);
     }
 
     private fun handleTemplateHtmlFlowSync() : Mono<ServerResponse> {
