@@ -16,7 +16,7 @@ done
 #
 # Define routes for benchmark
 #
-ROUTES=(thymeleaf/sync kotlinx/sync htmlFlow/sync thymeleaf kotlinx htmlFlow htmlFlow/suspending)
+ROUTES=(thymeleaf/sync rocker/sync kotlinx/sync htmlFlow/sync thymeleaf kotlinx htmlFlow htmlFlow/suspending)
 #
 # Warm up all paths in 3 iterations each.
 #
