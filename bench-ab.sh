@@ -34,7 +34,7 @@ done
 echo "##########################################"
 echo "############# RUN BENCH ##################"
 echo "##########################################"
-./run-ab.sh "${ROUTES[@]}" > ab.log
+./run-ab.sh "${ROUTES[@]}"
 
 # Gracefully terminate the Spring Boot application
 kill $PID_WEBFLUX

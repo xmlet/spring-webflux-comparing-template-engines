@@ -18,7 +18,7 @@
 		<rxjava.version>3.1.6</rxjava.version>
 
 		<!-- Template engine versions -->
-		<htmlflow.version>4.5</htmlflow.version>
+		<htmlflow.version>4.6</htmlflow.version>
 		<kotlin.version>1.9.22</kotlin.version>
 		<kotlinx.html.version>0.11.0</kotlinx.html.version>
 		<junit-jupiter.version>5.8.0</junit-jupiter.version>
