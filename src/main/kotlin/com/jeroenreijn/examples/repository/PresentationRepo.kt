@@ -1,10 +1,10 @@
 package com.jeroenreijn.examples.repository
 
 import com.jeroenreijn.examples.model.Presentation
-import reactor.core.publisher.Flux
+import io.reactivex.rxjava3.core.Observable
 
 sealed interface PresentationRepo {
 
-    fun findAllReactive() : Flux<Presentation>
+    fun findAllReactive() : Observable<Presentation>
 
 }

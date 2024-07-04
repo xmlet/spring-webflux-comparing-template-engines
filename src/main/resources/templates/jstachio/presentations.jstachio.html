@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en-US">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-compatible" content="IE=Edge">
+    <title>
+        JFall 2013 Presentations - JStachio
+    </title>
+    <link rel="Stylesheet" href="/webjars/bootstrap/5.3.0/css/bootstrap.min.css">
+</head>
+<body>
+<div class="container">
+    <div class="pb-2 mt-4 mb-3 border-bottom">
+        <h1>
+            JFall 2013 Presentations - JStachio
+        </h1>
+    </div>
+    {{#presentationItems}}
+    <div class="card mb-3 shadow-sm rounded">
+        <div class="card-header">
+            <h5 class="card-title">
+                {{title}} - {{speakerName}}
+            </h5>
+        </div>
+        <div class="card-body">
+            {{summary}}
+        </div>
+    </div>
+    {{/presentationItems}}
+</div>
+</body>
+</html>

@@ -2,11 +2,11 @@ package com.jeroenreijn.examples.view
 
 import com.jeroenreijn.examples.model.Presentation
 import com.jeroenreijn.examples.view.appendable.AppendableSink
+import io.reactivex.rxjava3.core.Observable
 import kotlinx.html.*
 import kotlinx.html.stream.appendHTML
-import reactor.core.publisher.Flux
 
-fun kotlinXReactive(sink : AppendableSink, presentations : Flux<Presentation>) {
+fun kotlinXReactive(sink : AppendableSink, presentations : Observable<Presentation>) {
     sink
         .appendHTML()
         .html {
@@ -53,16 +53,17 @@ fun kotlinXReactive(sink : AppendableSink, presentations : Flux<Presentation>) {
         }
 }
 
-fun kotlinXSync(sink : Appendable, presentations : Flux<Presentation>) {
+fun kotlinXSync(sink : Appendable, presentations : Observable<Presentation>) {
     sink
         .appendHTML()
         .html {
+            lang = "en-US"
             head {
                 meta { charset = "utf-8" }
                 meta { name = "viewport"; content = "width=device-width, initial-scale=1.0" }
-                meta { httpEquiv = MetaHttpEquiv.contentLanguage; content = "IE=Edge" }
+                meta { httpEquiv = "X-UA-Compatible"; content = "IE=Edge" }
                 title { text("JFall 2013 Presentations - htmlApi") }
-                link { rel = LinkRel.stylesheet; href = "/webjars/bootstrap/4.3.1/css/bootstrap.min.css"; media = LinkMedia.screen }
+                link { rel = LinkRel.stylesheet; href = "/webjars/bootstrap/5.3.0/css/bootstrap.min.css" }
             }
             body {
                 div {
@@ -77,7 +78,7 @@ fun kotlinXSync(sink : Appendable, presentations : Flux<Presentation>) {
                                 classes = setOf("card mb-3 shadow-sm rounded")
                                 div {
                                     classes = setOf("card-header")
-                                    h3 {
+                                    h5 {
                                         classes = setOf("card-title")
                                         text(it.title + " - " + it.speakerName)
                                     }
@@ -88,11 +89,8 @@ fun kotlinXSync(sink : Appendable, presentations : Flux<Presentation>) {
                                 }
                             }
                         }
-                        .blockLast()
+                        .blockingLast()
                 }
-
-                script { src = "/webjars/jquery/3.1.1/jquery.min.js" }
-                script { src = "/webjars/bootstrap/4.3.1/js/bootstrap.min.js" }
             }
         }
 }

@@ -9,7 +9,7 @@ import static java.lang.System.out;
 
 /**
  * Set the timeout interleaving datasource items in Millis, e.g. 1 Milli:
- *   mvn spring-boot:run -Dspring-boot.run.jvmArguments="-DbenchTimeout=10"
+ *   mvn spring-boot:run -Dspring-boot.run.jvmArguments="-DbenchTimeout=1"
  */
 @SpringBootApplication
 public class Launch {
