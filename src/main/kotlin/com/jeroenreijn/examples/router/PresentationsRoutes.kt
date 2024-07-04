@@ -94,21 +94,37 @@ class PresentationsRoutes(repo : PresentationRepo, context: ApplicationContext) 
         mapOf<String, Any>("presentations" to ReactiveDataDriverContextVariable(presentationsFlux, 1))
     private val presentationsFlow = repo.findAllReactive().toFlowable(DROP).asFlow()
 
+    /**
+     * Routes with /sync path are blocking and rendering template on different Dispatcher and other thread pool.
+     */
     @Bean
     fun presentationsRouter() = router {
+        /*
+         * Thymeleaf
+         */
         GET("/thymeleaf") { handleTemplateThymeleaf() }
+        GET("/thymeleaf/sync") { handleTemplateThymeleafSync() }
+        /*
+         * HtmlFlow
+         */
         GET("/htmlFlow") { handleTemplateHtmlFlowFromFlux() }
         GET("/htmlFlow/suspending") { handleTemplateHtmlFlowSuspending() }
-        GET("/kotlinx") { handleTemplateKotlinX() }
+        GET("/htmlFlow/sync") { handleTemplateHtmlFlowSync() }
+        /*
+         * KotlinX
+         */
+        GET("/kotlinx") { handleTemplateKotlinX() } // Async non-blocking BUT returns MALL FORMED HTML
+        GET("/kotlinx/sync") { handleTemplateKotlinXSync() }
+        /*
+         * Others that do NOT support data models with Asynchronous APIs.
+         * Those use sync blocking approaches running on different Dispatcher and other thread pool,
+         */
         GET("/rocker/sync") { handleTemplateRockerSync() }
         GET("/jstachio/sync") { handleTemplateJStachioSync() }
         GET("/pebble/sync") { handleTemplatePebbleSync() }
         GET("/freemarker/sync") { handleTemplateFreemarkerSync() }
         GET("/trimou/sync") { handleTemplateTrimouSync() }
         GET("/velocity/sync") { handleTemplateVelocitySync() }
-        GET("/thymeleaf/sync") { handleTemplateThymeleafSync() }
-        GET("/htmlFlow/sync") { handleTemplateHtmlFlowSync() }
-        GET("/kotlinx/sync") { handleTemplateKotlinXSync() }
     }
 
     private fun handleTemplateRockerSync(): Mono<ServerResponse> {
@@ -202,7 +218,7 @@ class PresentationsRoutes(repo : PresentationRepo, context: ApplicationContext) 
 
     private fun handleTemplateHtmlFlowSync() : Mono<ServerResponse> {
         /*
-         * We need another co-routine to render concurrently and ensure
+         * We need another co-routine in another thread (this one is blocking IO) to render concurrently and ensure
          * progressive server-side rendering (PSSR)
          */
         val view = AppendableSink().also { scope.launch {
