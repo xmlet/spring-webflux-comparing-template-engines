@@ -38,9 +38,7 @@ echo "##########################################"
 echo "############# WARM UP ####################"
 echo "##########################################"
 for path in "${ROUTES[@]}"; do
-  for ((n=0;n<1;n++)); do
-    ab -n 1000 -c 32 http://localhost:8080/$path
-  done
+  ab -n 1000 -c 32 http://localhost:8080/$path
 done
 #
 # Run Bench
@@ -53,7 +51,7 @@ echo "##########################################"
 
 # Gracefully terminate the Spring Boot application when running on local machine.
 # It will send a SIGTERM corresponding to Exit code 143.
-if [ "GH" != "true" ]; then
+if [ "$GH" != "true" ]; then
   kill $PID_WEBFLUX
 
   # Wait for the process to exit
