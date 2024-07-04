@@ -1,8 +1,8 @@
 #!/bin/bash
 
 REQUESTS=256
-THREADS=(128)
-ITERATIONS=3
+THREADS=(1)
+ITERATIONS=1
 
 for ths in "${THREADS[@]}"; do   # For each number of threads
   for path in "$@"; do           # For each path in line argument

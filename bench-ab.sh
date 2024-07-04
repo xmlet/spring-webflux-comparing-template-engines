@@ -24,7 +24,7 @@ echo "##########################################"
 echo "############# WARM UP ####################"
 echo "##########################################"
 for path in "${ROUTES[@]}"; do
-  for ((n=0;n<3;n++)); do
+  for ((n=0;n<1;n++)); do
     ab -n 1000 -c 32 http://localhost:8080/$path
   done
 done
@@ -34,9 +34,10 @@ done
 echo "##########################################"
 echo "############# RUN BENCH ##################"
 echo "##########################################"
-./run-ab.sh "${ROUTES[@]}"
+./run-ab.sh "${ROUTES[@]}" > ab.log
 
-# Gracefully terminate the Spring Boot application
+# Gracefully terminate the Spring Boot application.
+# It will send a SIGTERM corresponding to Exit code 143.
 kill $PID_WEBFLUX
 
 # Wait for the process to exit
