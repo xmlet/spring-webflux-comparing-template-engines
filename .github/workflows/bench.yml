@@ -25,6 +25,8 @@ jobs:
         run: mvn clean install
 
       - name: Run Benchmark
+        env:
+          GH: true
         run: ./bench-ab.sh
 
       - name: Upload results
