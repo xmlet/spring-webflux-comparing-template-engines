@@ -9,6 +9,8 @@ on:
 jobs:
   benchmark:
     runs-on: ubuntu-latest
+    env:
+      GH: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,8 +27,6 @@ jobs:
         run: mvn clean install
 
       - name: Run Benchmark
-        env:
-          GH: true
         run: ./bench-ab.sh
 
       - name: Upload results
