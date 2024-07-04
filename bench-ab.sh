@@ -35,10 +35,3 @@ echo "##########################################"
 echo "############# RUN BENCH ##################"
 echo "##########################################"
 ./run-ab.sh "${ROUTES[@]}" > ab.log
-
-# Gracefully terminate the Spring Boot application.
-# It will send a SIGTERM corresponding to Exit code 143.
-kill $PID_WEBFLUX
-
-# Wait for the process to exit
-wait $PID_WEBFLUX
