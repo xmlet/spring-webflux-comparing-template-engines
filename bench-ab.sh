@@ -52,9 +52,8 @@ echo "##########################################"
 # Gracefully terminate the Spring Boot application when running on local machine.
 # It will send a SIGTERM corresponding to Exit code 143.
 if [ "$GH" != "true" ]; then
-  # kill $PID_WEBFLUX
+  kill $PID_WEBFLUX
 
   # Wait for the process to exit
-  # wait $PID_WEBFLUX
-  echo "!!!! Enter here and did not see GH with true"
+  wait $PID_WEBFLUX
 fi
