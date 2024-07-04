@@ -102,8 +102,11 @@ val htmlFlowTemplateSync: HtmlView<Observable<Presentation>> = HtmlFlow.view<Obs
     .`__`() // html
 }.threadSafe()
 
-
-val presentationFragment = viewAsync<Presentation> {
+/**
+ * Use fragment.renderAsync() rather than render() to create a new StringBuilder() (note render() reuse the same StringBuilder()).
+ * Note render reuse a per-thread visitor from TLS than is indistinct among different coroutines.
+ */
+private val presentationFragment: HtmlViewAsync<Presentation> = viewAsync<Presentation> {
         div().attrClass("card mb-3 shadow-sm rounded")
         .div().attrClass("card-header")
         .h5()
