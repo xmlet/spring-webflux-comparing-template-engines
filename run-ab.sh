@@ -1,7 +1,7 @@
 #!/bin/bash
 
 REQUESTS=256
-THREADS=(1 2 4 8 16 64)
+THREADS=(1 2 4 8 16 64 128)
 ITERATIONS=3
 
 for ths in "${THREADS[@]}"; do   # For each number of threads

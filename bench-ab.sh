@@ -46,7 +46,7 @@ done
 echo "##########################################"
 echo "############# RUN BENCH ##################"
 echo "##########################################"
-# ./run-ab.sh "${ROUTES[@]}" > ab.log
+./run-ab.sh "${ROUTES[@]}" > ab.log
 
 
 # Gracefully terminate the Spring Boot application when running on local machine.
