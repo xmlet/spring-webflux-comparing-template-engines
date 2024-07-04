@@ -6,6 +6,7 @@
 #
 mvn spring-boot:run -Dspring-boot.run.jvmArguments="-DbenchTimeout=1" > spring-webflux.log &
 PID_WEBFLUX=$!
+echo ":::::::::::::::::::::::::::::::     Spring running PID = $PID_WEBFLUX"
 #
 # Wait until appear the message 'Netty started on port 8080' in spring-webflux.log
 #
@@ -16,7 +17,20 @@ done
 #
 # Define routes for benchmark
 #
-ROUTES=(thymeleaf/sync rocker/sync kotlinx/sync htmlFlow/sync thymeleaf kotlinx htmlFlow htmlFlow/suspending)
+ROUTES=(
+  thymeleaf
+  thymeleaf/sync
+  kotlinx/sync
+  htmlFlow
+  htmlFlow/suspending
+  htmlFlow/sync
+  rocker/sync
+  jstachio/sync
+  pebble/sync
+  freemarker/sync
+  trimou/sync
+  velocity/sync
+)
 #
 # Warm up all paths in 3 iterations each.
 #
@@ -24,7 +38,7 @@ echo "##########################################"
 echo "############# WARM UP ####################"
 echo "##########################################"
 for path in "${ROUTES[@]}"; do
-  for ((n=0;n<3;n++)); do
+  for ((n=0;n<1;n++)); do
     ab -n 1000 -c 32 http://localhost:8080/$path
   done
 done
@@ -34,4 +48,14 @@ done
 echo "##########################################"
 echo "############# RUN BENCH ##################"
 echo "##########################################"
-./run-ab.sh "${ROUTES[@]}" > ab.log
+# ./run-ab.sh "${ROUTES[@]}" > ab.log
+
+
+# Gracefully terminate the Spring Boot application when running on local machine.
+# It will send a SIGTERM corresponding to Exit code 143.
+if [ "GH" != "true" ]; then
+  kill $PID_WEBFLUX
+
+  # Wait for the process to exit
+  wait $PID_WEBFLUX
+fi
