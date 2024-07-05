@@ -20,16 +20,16 @@ done
 ROUTES=(
   thymeleaf
   thymeleaf/sync
-  kotlinx/sync
-  htmlFlow
+  # kotlinx/sync
+  # htmlFlow
   htmlFlow/suspending
   htmlFlow/sync
-  rocker/sync
+  # rocker/sync
   jstachio/sync
-  pebble/sync
-  freemarker/sync
+  # pebble/sync
+  # freemarker/sync
   trimou/sync
-  velocity/sync
+  # velocity/sync
 )
 #
 # Warm up all paths in 3 iterations each.
