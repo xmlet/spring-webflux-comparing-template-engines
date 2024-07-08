@@ -8,7 +8,7 @@ import org.springframework.boot.web.servlet.support.SpringBootServletInitializer
 import static java.lang.System.out;
 
 /**
- * Set the timeout interleaving data source items in Millis, e.g. 1 Milli:
+ * Set the timeout interleaving data source items in Millis, e.g. 1 Micro:
  *   mvn spring-boot:run -Dspring-boot.run.jvmArguments="-DbenchTimeout=1"
  */
 @SpringBootApplication

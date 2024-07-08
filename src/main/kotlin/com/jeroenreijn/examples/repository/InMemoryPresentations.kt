@@ -4,6 +4,7 @@ import com.jeroenreijn.examples.model.Presentation
 import io.reactivex.rxjava3.core.BackpressureStrategy
 import io.reactivex.rxjava3.core.Flowable
 import io.reactivex.rxjava3.core.Observable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import org.reactivestreams.Publisher
 import org.springframework.stereotype.Repository
 import java.util.concurrent.TimeUnit
@@ -13,6 +14,9 @@ import java.util.concurrent.TimeUnit
 class InMemoryPresentations : PresentationRepo {
 
     companion object {
+        /**
+         * Interval period between items in microseconds.
+         */
         var timeout: Long = 0
     }
 
@@ -25,7 +29,7 @@ class InMemoryPresentations : PresentationRepo {
         presentationsReactive
     } else {
         presentationsReactive
-            .concatMap { Observable.just(it).delay(timeout, TimeUnit.MILLISECONDS) }
+            .concatMap { Observable.just(it).delay(timeout, TimeUnit.MICROSECONDS, Schedulers.io()) }
     }
 
     init {
