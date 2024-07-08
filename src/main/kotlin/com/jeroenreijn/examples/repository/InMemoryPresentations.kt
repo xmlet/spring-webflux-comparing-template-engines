@@ -15,7 +15,7 @@ class InMemoryPresentations : PresentationRepo {
 
     companion object {
         /**
-         * Interval period between items in microseconds.
+         * Interval period between items in milliseconds.
          */
         var timeout: Long = 0
     }
@@ -29,7 +29,7 @@ class InMemoryPresentations : PresentationRepo {
         presentationsReactive
     } else {
         presentationsReactive
-            .concatMap { Observable.just(it).delay(timeout, TimeUnit.MICROSECONDS, Schedulers.io()) }
+            .concatMap { Observable.just(it).delay(timeout, TimeUnit.MILLISECONDS, Schedulers.io()) }
     }
 
     init {
