@@ -20,16 +20,16 @@ done
 ROUTES=(
   thymeleaf
   thymeleaf/sync
-  kotlinx/sync
-  htmlFlow
+  # kotlinx/sync
+  # htmlFlow
   htmlFlow/suspending
   htmlFlow/sync
-  rocker/sync
+  # rocker/sync
   jstachio/sync
-  pebble/sync
-  freemarker/sync
+  # pebble/sync
+  # freemarker/sync
   trimou/sync
-  velocity/sync
+  # velocity/sync
 )
 #
 # Warm up all paths in 3 iterations each.
@@ -46,15 +46,14 @@ done
 echo "##########################################"
 echo "############# RUN BENCH ##################"
 echo "##########################################"
-# ./run-ab.sh "${ROUTES[@]}" > ab.log
+./run-ab.sh "${ROUTES[@]}" > ab.log
 
 
 # Gracefully terminate the Spring Boot application when running on local machine.
 # It will send a SIGTERM corresponding to Exit code 143.
 if [ "$GH" != "true" ]; then
-  # kill $PID_WEBFLUX
+  kill $PID_WEBFLUX
 
   # Wait for the process to exit
-  # wait $PID_WEBFLUX
-  echo "!!!! Enter here and did not see GH with true"
+  wait $PID_WEBFLUX
 fi

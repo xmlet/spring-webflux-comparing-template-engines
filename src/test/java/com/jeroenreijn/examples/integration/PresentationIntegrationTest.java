@@ -23,6 +23,7 @@ class PresentationIntegrationTest {
     private static LaunchJMH jmh = new LaunchJMH();
 
     static {
+        // Set items interval to 10 milliseconds
         InMemoryPresentations.Companion.setTimeout(10);
         jmh.startupSpring();
     }
