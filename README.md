@@ -5,7 +5,7 @@ which accompanied [Jeroen Reijn](https://github.com/jreijn) in
 ["Shoot-out! Template engines for the JVM"](http://www.slideshare.net/jreijn/comparing-templateenginesjvm)
 presentation, which shows the differences among several Java template engines in combination with Spring MVC,
 now with **Spring WebFlux**.
-Most template engines were removed from former benchmark, since they do not support
+Some template engines were removed from former benchmark, since they do not support
 PSSR (_Progressive server-side rendering)_.
 
 Template engines used in this project are:
@@ -29,10 +29,10 @@ but this blocking should occur in a new coroutine, freeing the request handler c
 process other HTTP requests.
 Routes **blocking** are marked with `/sync` in their path to highlight this behavior.
 Next, we present the list of routes handled by each templating approach:
-* http://localhost:8080/thymeleaf - asynchronous NIO using `ReactiveDataDriverContextVariable` 
+* http://localhost:8080/thymeleaf - asynchronous using `ReactiveDataDriverContextVariable` 
 * http://localhost:8080/thymeleaf/sync - blocking
 * http://localhost:8080/htmlFlow - asynchronous, using a callback to resume execution. 
-* http://localhost:8080/htmlFlow/suspending - asynchronous, using async/await idiom of Kotlin suspending functions.
+* http://localhost:8080/htmlFlow/suspending - asynchronous, using Kotlin suspending functions.
 * http://localhost:8080/htmlFlow/sync - blocking
 * http://localhost:8080/kotlinx/sync - blocking
 * http://localhost:8080/rocker/sync - blocking
@@ -92,10 +92,10 @@ from 1 to 128, labeled above each bar.
 The benchmarks include HtmlFlow using suspendable web templates (`HF-susp`),
 `Thymeleaf-rx` with the reactive ViewResolver driver, and `Sync` representing all templates
 (i.e. KotlinX.html, Rocker, JStachio, Pebble, Freemarker, Trimou, and Velocity) using a synchronous
-blocking IO approach executed in user-level threads on a separate dispatcher.
+blocking approach executed in user-level threads on a separate dispatcher.
 With 4 available cores, we observed that throughput scales across all template
 engines until reaching 4 concurrent requests. Beyond this point, templates utilizing
-non-blocking I/O, specifically Thymeleaf and HtmlFlow, exhibit varying performances.
+non-blocking, specifically Thymeleaf and HtmlFlow, exhibit varying performances.
 These two approaches are the only ones that scale effectively up to 32
 threads. However, HtmlFlow consistently scales up to 128 threads and doubles
 the performance achieved by Thymeleaf.
